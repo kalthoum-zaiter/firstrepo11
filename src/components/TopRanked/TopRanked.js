@@ -5,12 +5,14 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import SymbolInfo from '../SymbolInfo/SymbolInfo';
 
 const TopStocks = () => {
     const [stocks, setStocks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
+    const handleSymbolInfo = () => {
+        navigate('/SymbolInfo');
+    };
 
     useEffect(() => {
         const apiKey = 'FFTZ06W4JZ6C7ZDS'; // Your API key
@@ -42,51 +44,17 @@ const TopStocks = () => {
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
     };
-    const handleGenerateAiReport = () => {
-        navigate('/generateAiReport')
-    };
 
     const filteredStocks = stocks.filter(stock =>
         stock.symbol.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleAddToPortfolio = () => {
-        navigate('/portf');
-    };
-   
-    const handleSymbolInfo = () => {
-        navigate('/SymbolInfo');
-    };
     return (
-        <Grid
-            container
-            spacing={2}
-            width="100%"
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                mt: 1,
-                height: 'calc(100vh - 64px)', // Hauteur ajustée pour tenir compte de la hauteur de la barre d'application
-                overflow: 'auto',
-                scrollbarWidth: 'none',
-                '&::-webkit-scrollbar': { display: 'none' },backgroundColor:'white'
-            }}
-        >
+        <Grid container spacing={2} width="100%" sx={{ display: 'flex', justifyContent: 'center', mt: 1, height: 'calc(100vh - 64px)', overflow: 'hidden', '&:hover': { overflowY: 'auto' }, scrollbarWidth: 'none', '&::-webkit-scrollbar': { display: 'none' }, backgroundColor: 'white', paddingLeft: 5 }}>
             <Grid item xs={12}>
-                <Typography variant="h6" sx={{ paddingTop: 2, paddingBottom: 2, textAlign: 'left' }}>
-                    Top Stocks
-                    <br />
-                    Our AI Score combines AI and Alternative data to assess a stock's mid-term market outperformance potential (6+ months) by analyzing multiple financial, technical and alternative data points. This predictive measure assigns a score from 0 to 100, representing the stock's performance and potential.
-                    <br />
-                    You can also filter on top stocks by sector / industry.
-                </Typography>
-                <TextField
-                    variant="outlined"
-                    placeholder="Search Stocks"
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    sx={{ marginBottom: 2 }}
-                />
+                <Typography variant="h4" sx={{ paddingTop: 2, paddingBottom: 2, textAlign: 'left' }}>Top Stocks</Typography>
+                <Typography variant="h6" sx={{ paddingTop: 2, paddingBottom: 2, textAlign: 'left' }}>Our AI Score combines AI and Alternative data to assess a stock's mid-term market outperformance potential (6+ months).</Typography>
+                <TextField variant="outlined" placeholder="Search Stocks" value={searchTerm} onChange={handleSearchChange} sx={{ marginBottom: 2, paddingLeft: 5 }} />
                 <TableContainer component={Paper}>
                     <Table aria-label="simple table">
                         <TableHead>
@@ -101,7 +69,7 @@ const TopStocks = () => {
                         <TableBody>
                             {filteredStocks.map((stock) => (
                                 <TableRow key={stock.symbol}>
-                                    <TableCell component="th" scope="row" onClick={handleSymbolInfo}>
+                                    <TableCell component="th" scope="row" >
                                         <Link to={`/stock/${stock.symbol}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                             {stock.symbol}
                                         </Link>
@@ -111,10 +79,10 @@ const TopStocks = () => {
                                         <Button variant="outlined" color="primary">{stock.aiScore}</Button>
                                     </TableCell>
                                     <TableCell align="center">
-                                        <Button variant="contained" color="primary" onClick={handleGenerateAiReport}>Generate</Button>
+                                        <Button variant="contained" color="primary" onClick={() => navigate('/generateAiReport')}>Generate</Button>
                                     </TableCell>
                                     <TableCell align="center">
-                                        <Button variant="contained" color="secondary" onClick={handleAddToPortfolio}>Add to Portfolio</Button>
+                                        <Button variant="contained" color="secondary" onClick={() => navigate('/portf')}>Add to Portfolio</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}

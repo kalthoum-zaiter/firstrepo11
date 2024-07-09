@@ -4,10 +4,7 @@ import StockWidget from '../TickerInfo/TickerInfo';
 
 // The GenerateAiScore component
 const GenerateAiScore = ({ stockData }) => {
-  // Checking if stockData is available
-  if (!stockData) {
-    return <Box padding={3}><Typography>Loading data...</Typography></Box>;
-  }
+
 
   return (
     <Box padding={3}>

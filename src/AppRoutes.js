@@ -6,6 +6,8 @@ import Portf from './components/Portf/Portf';
 import SymbolInfo from './components/SymbolInfo/SymbolInfo';
 import GenerateAiScore from './components/GenerateAiScore/GenerateAiScore';
 import  StockData from './components/teststockinfo/teststockinfo';
+import CompanyInfo from './components/teststockinfo/teststockinfo';
+import StockTrend from './components/Vitrine/Vitrine';
 const AppRoutes = [
   {
     path: '/topstocks',
@@ -41,6 +43,16 @@ const AppRoutes = [
   {
     path: '/Teststockinfo',
     element: <StockData />,
+    sidebar: true
+  },
+  {
+    path: '/companyinfo',
+    element: <CompanyInfo />,
+    sidebar: true
+  },
+  {
+    path: '/stockTrend',
+    element: <StockTrend/>,
     sidebar: true
   }
   // Add other routes as needed

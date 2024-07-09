@@ -5,21 +5,23 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Box } from '@mui/material';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu'; // Icon for toggling
+import { Box, Typography } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import ChatIcon from '@mui/icons-material/Chat';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import GroupIcon from '@mui/icons-material/Group';
 import FacebookIcon from '@mui/icons-material/Facebook';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';  // Using MusicNoteIcon as a replacement for TikTok
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import EmailIcon from '@mui/icons-material/Email';
 import PublicIcon from '@mui/icons-material/Public';
-import trade from './ASSETS/trade.jpg';
 
 const drawerWidth = 240;
+const collapsedWidth = 70;
 
-const Sidebar = ({ open, onClose }) => {
+const Sidebar = ({ open, onClose, toggleSidebar }) => {
   const icons = [
     <HomeIcon color="primary" />,
     <QueryStatsIcon color="primary" />,
@@ -39,25 +41,31 @@ const Sidebar = ({ open, onClose }) => {
       open={open}
       onClose={onClose}
       sx={{
-        width: drawerWidth,
+        width: open ? drawerWidth : collapsedWidth,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: drawerWidth,
+          width: open ? drawerWidth : collapsedWidth,
           boxSizing: 'border-box',
           backgroundColor: 'primary.main',
-          color: 'white'
+          color: 'white',
+          overflowX: 'hidden', // Prevent horizontal scrollbar
         },
       }}
     >
-     
+      <Box sx={{ padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6" sx={{ color: 'white' }}></Typography>
+        <IconButton onClick={toggleSidebar}>
+          <MenuIcon color="inherit" />
+        </IconButton>
+      </Box>
       <List>
         {['Top Stocks', 'Data Bits', 'Reddit Mentions', 'News Mentions', '4chan Mentions', 'Instagram Followers', 'Facebook Followers', 'TikTok Followers', 'Threads Followers', 'Webpage Traffic'].map((text, index) => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
-              <ListItemText primary={text} sx={{ display: open ? 'block' : 'none', flexGrow: 1 }} />
-              <ListItemIcon sx={{ justifyContent: 'flex-end', color: 'white' }}>
+              <ListItemIcon sx={{ justifyContent: 'center', minWidth: 'auto' }}>
                 {icons[index]}
               </ListItemIcon>
+              <ListItemText primary={text} sx={{ display: open ? 'block' : 'none' }} />
             </ListItemButton>
           </ListItem>
         ))}

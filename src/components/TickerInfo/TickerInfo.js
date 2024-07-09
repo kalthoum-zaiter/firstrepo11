@@ -32,8 +32,8 @@ const StockWidget = ({ symbol }) => {
   }, [symbol]);
 
   return (
-    <Card sx={{ maxWidth: 345, margin: 'auto', mt: 5 }}>
-      <CardContent>
+    <Grid container sx={{ maxWidth: 345, margin: 'auto', mt: 5 }}>
+      <Grid item>
         <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 2 }}>
           {symbol} - Stock Data
         </Typography>
@@ -66,8 +66,8 @@ const StockWidget = ({ symbol }) => {
         <Typography variant="subtitle1" gutterBottom component="div" sx={{ mt: 2 }}>
           Dividend Yield: {stockData.dividendYield}
         </Typography>
-      </CardContent>
-    </Card>
+      </Grid>
+    </Grid >
   );
 };
 

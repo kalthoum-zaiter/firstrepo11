@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
 import {
-  AppBar, Box, Toolbar, MenuItem, Button, Link, IconButton, Menu, TextField, InputAdornment,
-  Paper, Grid, Typography
+  AppBar, Box, Toolbar, MenuItem, Button, IconButton, TextField, InputAdornment,
+  Typography
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import Sidebar from '../SideBar/SideBar'; // Verify this path is correct
+import Sidebar from '../SideBar/SideBar'; // Assurez-vous que ce chemin est correct
 
 const drawerWidth = 240;
-const pages = ['Datasets', 'Top Stocks', 'Stock Alerts', 'AI Stock Picks']; // Define the pages for navigation
+const pages = ['Datasets', 'Top Stocks', 'Stock Alerts', 'AI Stock Picks']; // Définissez les pages pour la navigation
 
 export default function Layout({ children, showSidebar, showAppBar, isAuthenticated }) {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Default to true to be open initially
-  const [userName, setUserName] = useState('John Doe'); // Replace with actual user name state
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Défini à true pour être ouvert initialement
+  const [userName, setUserName] = useState('John Doe'); // Remplacer par l'état réel du nom d'utilisateur
   const navigate = useNavigate();
 
   const handleProfileMenuOpen = (event) => {
@@ -34,9 +34,17 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ display: 'flex', width: '100%' , backgroundColor: '#F0F0F2' ,overflow:1}}>
+      <Box sx={{ display: 'flex', width: '100%', backgroundColor: '#F0F0F2', overflow: 'auto' }}>
         {showAppBar && (
-          <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+          <AppBar position="fixed" sx={{
+            zIndex: theme.zIndex.drawer + 1,
+            width: `calc(100% - ${showSidebar && sidebarOpen ? drawerWidth : 0}px)`,
+            marginLeft: `${showSidebar && sidebarOpen ? drawerWidth : 0}px`,
+            transition: theme.transitions.create(['margin', 'width'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+          }}>
             <Toolbar>
               {showSidebar && (
                 <IconButton
@@ -50,11 +58,10 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
                   <MenuIcon />
                 </IconButton>
               )}
-              <Box   sx={{ marginLeft:21}}>
               <TextField
                 variant="outlined"
                 placeholder="Search Stocks & Crypto"
-                sx={{ flex: 1, bgcolor: 'background.paper', borderRadius: 1 ,width:400 }}
+                sx={{ flex: 1, bgcolor: 'background.paper', borderRadius: 1, width: 400 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -63,15 +70,14 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
                   ),
                 }}
               />
-              </Box>
               {pages.map((page) => (
-                <MenuItem 
+                <MenuItem
                   key={page}
                   sx={{ color: 'white', marginLeft: 2 }}
                   onClick={() => navigate(`/${page.replace(/\s+/g, '').toLowerCase()}`)}
                 >
                   {page}
-                </MenuItem >
+                </MenuItem>
               ))}
               <Box sx={{ flexGrow: 1 }} />
               {isAuthenticated ? (
@@ -103,27 +109,16 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
           sx={{
             flexGrow: 1,
             p: 3,
-            width: `calc(100% - ${sidebarOpen ? drawerWidth : -1000}px)`, // Adjust width dynamically
-            marginLeft: `${sidebarOpen ? drawerWidth : -150}px`, // Adjust marginLeft dynamically
+            width: `calc(100% - ${showSidebar && sidebarOpen ? drawerWidth : 0}px)`,
+            marginLeft: `${showSidebar && sidebarOpen ? drawerWidth : 100}px`,
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),
-            marginTop: showAppBar ? '64px' : '0px'
+            marginTop: showAppBar ? '64px' : '0px',
           }}
         >
-     <Grid container spacing={0} width="100%" height="100%">
-         <Grid item xs={12} sx={{ marginLeft: -10}}>
-           <Box sx={{ display: 'flex',height:"100vh",
-    overflow:1,scrollbarWidth: 'none',
-    '&::-webkit-scrollbar': {
-        width: '0',backgroundColor:'white'
-      } }}>{children}</Box>
-           
-         </Grid>
-    </Grid>
-  
-        
+          <Box sx={{ display: 'flex', height: "100vh", overflow: 'auto', marginLeft: -20 }}>{children}</Box>
         </Box>
       </Box>
     </ThemeProvider>
