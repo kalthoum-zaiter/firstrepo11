@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginForm from './components/signin/signin';
 import Register from './pages/Register';
-import Vitrine from './components/Vitrine/Vitrine'; // Importer le composant Vitrine
+import Vitrine from './components/Vitrine/Vitrine';
+import SymbolInfo from './components/TickerInfo/TickerInfo'; // Assurez-vous d'avoir ce composant
 import AppRoutes from './AppRoutes';
 import Layout from './components/Layout/Layout';
-
 
 const AppRouter = ({ mode, handleModeChange }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -33,13 +33,16 @@ const AppRouter = ({ mode, handleModeChange }) => {
             <Register />
           </Layout>
         } />
+        <Route path="/ticker/:tickerName" element={
+          <Layout showSidebar={false} showAppBar={true} isAuthenticated={isAuthenticated}>
+            <SymbolInfo />
+          </Layout>
+        } />
         {AppRoutes.map((route, index) => (
           <Route key={index} path={route.path} element={
-            (
-              <Layout showSidebar={route.sidebar} showAppBar={true} isAuthenticated={isAuthenticated}>
-                {React.cloneElement(route.element, { mode: mode, handleModeChange: handleModeChange })}
-              </Layout>
-            )  
+            <Layout showSidebar={route.sidebar} showAppBar={true} isAuthenticated={isAuthenticated}>
+              {React.cloneElement(route.element, { mode: mode, handleModeChange: handleModeChange })}
+            </Layout>
           } />
         ))}
       </Routes>

@@ -7,7 +7,6 @@ const CompanyInfo = ({ ticker }) => {
   const [companyData, setCompanyData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Requête HTTP pour récupérer les données de l'entreprise
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -22,7 +21,6 @@ const CompanyInfo = ({ ticker }) => {
     fetchData();
   }, [ticker]);
 
-  // Afficher un indicateur de chargement pendant la récupération des données
   if (loading) {
     return (
       <Grid container justifyContent="center" alignItems="center" style={{ height: '100vh' }}>
@@ -31,7 +29,6 @@ const CompanyInfo = ({ ticker }) => {
     );
   }
 
-  // Gérer le cas où aucune donnée n'est disponible
   if (!companyData) {
     return <Typography variant="h6" textAlign="center">No data available</Typography>;
   }

@@ -8,21 +8,22 @@ import GenerateAiScore from './components/GenerateAiScore/GenerateAiScore';
 import  StockData from './components/teststockinfo/teststockinfo';
 import CompanyInfo from './components/teststockinfo/teststockinfo';
 import StockTrend from './components/Vitrine/Vitrine';
+import TechnicalIndicator from './components/TechnicalIndicator/TechnicalIndicator'
 const AppRoutes = [
   {
     path: '/topstocks',
     element: <TopRanked />,
-    sidebar: true // This route should have a sidebar
+    sidebar: true 
   },
   {
     path: '/signin',
     element: <SignIn />,
-    sidebar: false // This route should not have a sidebar
+    sidebar: false 
   },
   {
     path: '/register',
     element: <SignUp />,
-    sidebar: false // This route should not have a sidebar
+    sidebar: false
   },
   {
     
@@ -30,13 +31,13 @@ const AppRoutes = [
     element: <Portf />,
     sidebar: false
   },
-  {
-    path: '/symbolinfo',
+  {//lezem nehiha overview 
+    path: '/stock/:tickerName/overview',  
     element: <SymbolInfo />,
     sidebar: true
   },
   {
-    path: '/generateAiReport',
+    path: '/stock/:tickerName/aistockanalysis',
     element: <GenerateAiScore />,
     sidebar: true
   },
@@ -54,8 +55,12 @@ const AppRoutes = [
     path: '/stockTrend',
     element: <StockTrend/>,
     sidebar: true
+  },
+  {
+    path:'/stock/:tickerName/technicalanalysis',
+    element :<TechnicalIndicator/>,
+    sidebar: true
   }
-  // Add other routes as needed
 ];
 
 export default AppRoutes;

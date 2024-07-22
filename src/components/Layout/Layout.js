@@ -105,21 +105,25 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
         )}
         {showSidebar && <Sidebar open={sidebarOpen} onClose={toggleSidebar} />}
         <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            width: `calc(100% - ${showSidebar && sidebarOpen ? drawerWidth : 0}px)`,
-            marginLeft: `${showSidebar && sidebarOpen ? drawerWidth : 100}px`,
-            transition: theme.transitions.create(['margin', 'width'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-            marginTop: showAppBar ? '64px' : '0px',
-          }}
-        >
-          <Box sx={{ display: 'flex', height: "100vh", overflow: 'auto', marginLeft: -20 }}>{children}</Box>
-        </Box>
+  component="main"
+  sx={{
+    flexGrow: 1,
+    p: 3,
+    width: `calc(100% - ${showSidebar && sidebarOpen ? drawerWidth : 0}px)`,
+    marginLeft: `${showSidebar && sidebarOpen ? drawerWidth : 0}px`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginTop: showAppBar ? '64px' : '0px',
+  }}
+>
+  {/* Removed the fixed height and adjusted marginLeft, removed overflow: 'auto' */}
+  <Box sx={{ display: 'flex', overflow: 'auto' }}>{children}
+    
+  </Box>
+</Box>
+
       </Box>
     </ThemeProvider>
   );

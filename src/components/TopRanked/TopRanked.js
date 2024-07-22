@@ -10,12 +10,10 @@ const TopStocks = () => {
     const [stocks, setStocks] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate(); 
-    const handleSymbolInfo = () => {
-        navigate('/SymbolInfo');
-    };
+   
 
     useEffect(() => {
-        const apiKey = 'FFTZ06W4JZ6C7ZDS'; // Your API key
+        const apiKey = 'FFTZ06W4JZ6C7ZDS'; 
         const fetchStocks = async () => {
             try {
                 const symbols = ['TPL', 'NVDA', 'PCTY', 'PLRX']; // Example stock symbols
@@ -70,7 +68,7 @@ const TopStocks = () => {
                             {filteredStocks.map((stock) => (
                                 <TableRow key={stock.symbol}>
                                     <TableCell component="th" scope="row" >
-                                        <Link to={`/stock/${stock.symbol}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                        <Link to={`/stock/${stock.symbol}/overview`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                             {stock.symbol}
                                         </Link>
                                     </TableCell>
@@ -79,7 +77,7 @@ const TopStocks = () => {
                                         <Button variant="outlined" color="primary">{stock.aiScore}</Button>
                                     </TableCell>
                                     <TableCell align="center">
-                                        <Button variant="contained" color="primary" onClick={() => navigate('/generateAiReport')}>Generate</Button>
+                                        <Button variant="contained" color="primary" onClick={() => navigate('/stock/:tickerName/aistockanalysis')}>Generate</Button>
                                     </TableCell>
                                     <TableCell align="center">
                                         <Button variant="contained" color="secondary" onClick={() => navigate('/portf')}>Add to Portfolio</Button>
