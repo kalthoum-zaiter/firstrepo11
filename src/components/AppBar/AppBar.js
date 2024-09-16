@@ -9,7 +9,6 @@ import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 
-const pages = ['Top Stocks', 'Data Bits', 'Reddit Mentions', 'News Mentions', '4chan Mentions', 'Instagram Followers', 'Facebook Followers', 'TikTok Followers', 'Threads Followers', 'Webpage Traffic'];
 
 const ResponsiveAppBar = () => {
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -17,6 +16,15 @@ const ResponsiveAppBar = () => {
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+        setIsAuthenticated(true);
+        setUser(JSON.parse(storedUser));
+    }
+}, []);
+
 
   return (
     <AppBar position="static">

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from 'react'; 
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -29,26 +29,45 @@ function Copyright(props) {
 
 const defaultTheme = createTheme();
 
-export default function SignIn({ setIsAuthenticated }) {
+export default function SignIn({ setIsAuthenticated, user }) {
   const navigate = useNavigate();
   const [error, setError] = React.useState('');
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get('email');
     const password = data.get('password');
-
-    // Simuler le processus d'authentification
-    if (email === 'user@example.com' && password === 'password') {
-      setIsAuthenticated(true);
-      navigate('/topranked'); // Rediriger vers la page principale après la connexion réussie
-    } else {
-      // Gérer l'échec de l'authentification
-      setError('Email ou mot de passe incorrect');
+  
+    try {
+      const response = await fetch('http://127.0.0.1:5000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        const token = result.access_token;
+        const username = result.user.name; // Assurez-vous que 'user' contient le nom dans la réponse
+    
+        // Stocke le token et le nom de l'utilisateur
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify({ name: username }));
+    
+        // Définir l'utilisateur comme authentifié
+        setIsAuthenticated(true);
+        navigate('/accueil');
+    }else {
+        const errorData = await response.json();
+        setError(errorData.msg || 'Erreur de connexion');
+      }
+    } catch (error) {
+      setError('Une erreur est survenue. Veuillez réessayer.');
     }
   };
-
+  
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -61,63 +80,83 @@ export default function SignIn({ setIsAuthenticated }) {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Sign in
-          </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Adresse Email"
-              name="email"
-              autoComplete="email"
-              autoFocus
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Mot de passe"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Se souvenir de moi"
-            />
-            {error && (
-              <Typography color="error" variant="body2">
-                {error}
+          {user ? (
+            <>
+              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                {user.name.charAt(0).toUpperCase()}
+              </Avatar>
+              <Typography component="h1" variant="h5">
               </Typography>
-            )}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Se connecter
-            </Button>
-            <Grid container>
-              <Grid item xs>
-                <Link href="#" variant="body2">
-                  Mot de passe oublié ?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link href="/register" variant="body2">
-                  {"Pas de compte ? Inscrivez-vous"}
-                </Link>
-              </Grid>
-            </Grid>
-          </Box>
+              <Button
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={() => navigate('/accueil')}
+              >
+                Go to Dashboard
+              </Button>
+            </>
+          ) : (
+            <>
+              <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Sign in
+              </Typography>
+              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  id="email"
+                  label="Adresse Email"
+                  name="email"
+                  autoComplete="email"
+                  autoFocus
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="password"
+                  label="Mot de passe"
+                  type="password"
+                  id="password"
+                  autoComplete="current-password"
+                />
+                <FormControlLabel
+                  control={<Checkbox value="remember" color="primary" />}
+                  label="Se souvenir de moi"
+                />
+                {error && (
+                  <Typography color="error" variant="body2">
+                    {error}
+                  </Typography>
+                )}
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  Se connecter
+                </Button>
+                <Grid container>
+                  <Grid item xs>
+                    <Link href="#" variant="body2">
+                      Mot de passe oublié ?
+                    </Link>
+                  </Grid>
+                  <Grid item>
+                    <Link href="/register" variant="body2">
+                      {"Pas de compte ? Inscrivez-vous"}
+                    </Link>
+                  </Grid>
+                </Grid>
+              </Box>
+            </>
+          )}
         </Box>
         <Copyright sx={{ mt: 8, mb: 4 }} />
       </Container>

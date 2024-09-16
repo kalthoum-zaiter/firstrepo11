@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
 import {
   AppBar, Box, Toolbar, MenuItem, Button, IconButton, TextField, InputAdornment,
-  Typography
+  Typography, Avatar, Menu, MenuItem as DropdownMenuItem
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import Sidebar from '../SideBar/SideBar'; // Assurez-vous que ce chemin est correct
+import Sidebar from '../SideBar/SideBar';
+import PageStocks  from '../PageStocks/PageStocks'; // Import the StockDetails component
 
 const drawerWidth = 240;
-const pages = ['Datasets', 'Top Stocks', 'Stock Alerts', 'AI Stock Picks']; // Définissez les pages pour la navigation
 
-export default function Layout({ children, showSidebar, showAppBar, isAuthenticated }) {
+export default function Layout({ children, showSidebar, showAppBar, isAuthenticated, user }) {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Défini à true pour être ouvert initialement
-  const [userName, setUserName] = useState('John Doe'); // Remplacer par l'état réel du nom d'utilisateur
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(''); // Add state for search input
   const navigate = useNavigate();
 
   const handleProfileMenuOpen = (event) => {
@@ -34,12 +33,12 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ display: 'flex', width: '100%', backgroundColor: '#F0F0F2', overflow: 'auto' }}>
+      <Box sx={{ display: 'flex', width: '100%', minHeight: '100vh', bgcolor: 'white' }}>
         {showAppBar && (
           <AppBar position="fixed" sx={{
             zIndex: theme.zIndex.drawer + 1,
-            width: `calc(100% - ${showSidebar && sidebarOpen ? drawerWidth : 0}px)`,
-            marginLeft: `${showSidebar && sidebarOpen ? drawerWidth : 0}px`,
+            width: `calc(100% - ${showSidebar ? (sidebarOpen ? drawerWidth : 0) : 0}px)`,
+            marginLeft: `${showSidebar ? (sidebarOpen ? drawerWidth : 0) : 0}px`,
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
@@ -69,20 +68,13 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
                     </InputAdornment>
                   ),
                 }}
+                value={searchQuery} // Bind the input value to the state
+                onChange={(e) => setSearchQuery(e.target.value)} // Update the search query
               />
-              {pages.map((page) => (
-                <MenuItem
-                  key={page}
-                  sx={{ color: 'white', marginLeft: 2 }}
-                  onClick={() => navigate(`/${page.replace(/\s+/g, '').toLowerCase()}`)}
-                >
-                  {page}
-                </MenuItem>
-              ))}
               <Box sx={{ flexGrow: 1 }} />
-              {isAuthenticated ? (
+              {isAuthenticated && user ? (
                 <>
-                  <Typography variant="h6" sx={{ marginRight: 2 }}>{userName}</Typography>
+                  <Typography variant="h6" sx={{ marginRight: 2 }}>{user.name}</Typography>
                   <IconButton
                     edge="end"
                     aria-label="account of current user"
@@ -91,12 +83,26 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
                     onClick={handleProfileMenuOpen}
                     color="inherit"
                   >
-                    <AccountCircle />
+                    <Avatar alt={user.name} src={user.avatarUrl || ''} />
                   </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    keepMounted
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => {
+                      handleMenuClose();
+                      // Add your logout logic here
+                    }}>Logout</DropdownMenuItem>
+                  </Menu>
                 </>
               ) : (
                 <>
-                  <Button color="neutral" onClick={() => navigate('/signin')} variant="soft">Sign In</Button>
+                  <Button color="inherit" onClick={() => navigate('/signin')} variant="text">Sign In</Button>
                   <Button color="inherit" onClick={() => navigate('/register')}>Sign Up</Button>
                 </>
               )}
@@ -105,25 +111,25 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
         )}
         {showSidebar && <Sidebar open={sidebarOpen} onClose={toggleSidebar} />}
         <Box
-  component="main"
-  sx={{
-    flexGrow: 1,
-    p: 3,
-    width: `calc(100% - ${showSidebar && sidebarOpen ? drawerWidth : 0}px)`,
-    marginLeft: `${showSidebar && sidebarOpen ? drawerWidth : 0}px`,
-    transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginTop: showAppBar ? '64px' : '0px',
-  }}
->
-  {/* Removed the fixed height and adjusted marginLeft, removed overflow: 'auto' */}
-  <Box sx={{ display: 'flex', overflow: 'auto' }}>{children}
-    
-  </Box>
-</Box>
-
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            bgcolor: 'white',
+            width: `calc(100% - ${showSidebar ? (sidebarOpen ? drawerWidth : 0) : 0}px)`,
+            marginLeft: `${showSidebar ? (sidebarOpen ? drawerWidth : 0) : 0}px`,
+            transition: theme.transitions.create(['margin', 'width'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
+            marginTop: showAppBar ? '64px' : '0px',
+            minHeight: '100vh',
+          }}
+        >
+          {/* Render the StockDetails component and pass the search query */}
+          <PageStocks query={searchQuery} />
+          {children}
+        </Box>
       </Box>
     </ThemeProvider>
   );

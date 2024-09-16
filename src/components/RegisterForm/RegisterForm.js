@@ -31,13 +31,36 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignUp() {
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
+    const formData = {
+      firstName: data.get('firstName'),
+      lastName: data.get('lastName'),
       email: data.get('email'),
       password: data.get('password'),
-    });
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const result = await response.json();
+      if (response.ok) {
+        console.log('User registered successfully:', result);
+        // Handle success (e.g., redirect or show a success message)
+      } else {
+        console.error('Registration error:', result);
+        // Handle error (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      // Handle network error (e.g., show an error message)
+    }
   };
 
   return (
@@ -131,3 +154,4 @@ export default function SignUp() {
     </ThemeProvider>
   );
 }
+

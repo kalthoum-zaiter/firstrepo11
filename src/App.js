@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginForm from './components/signin/signin';
 import Register from './pages/Register';
 import Vitrine from './components/Vitrine/Vitrine';
-import SymbolInfo from './components/TickerInfo/TickerInfo'; // Assurez-vous d'avoir ce composant
+import SymbolInfo from './components/TickerInfo/TickerInfo'; 
 import AppRoutes from './AppRoutes';
 import Layout from './components/Layout/Layout';
 
@@ -40,7 +40,7 @@ const AppRouter = ({ mode, handleModeChange }) => {
         } />
         {AppRoutes.map((route, index) => (
           <Route key={index} path={route.path} element={
-            <Layout showSidebar={route.sidebar} showAppBar={true} isAuthenticated={isAuthenticated}>
+            <Layout showSidebar={route.sidebar} showAppBar={route.showAppBar} isAuthenticated={isAuthenticated}>
               {React.cloneElement(route.element, { mode: mode, handleModeChange: handleModeChange })}
             </Layout>
           } />

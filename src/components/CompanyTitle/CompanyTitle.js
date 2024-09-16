@@ -1,6 +1,8 @@
 import React from 'react'
+import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-///// nheb el composant hedha yestamlouh bech yebda esm el societe w log 
     const CompanyTitle = () => {
         const { tickerName } = useParams();
         const [companyName, setCompanyName] = useState('');
@@ -20,7 +22,7 @@ import React from 'react'
         }, [tickerName]);
   return (
     <div>
-           {companyName} ({tickerName}) Statistics & Alternative Data 2024
+           {companyName} 
 
     </div>
   )

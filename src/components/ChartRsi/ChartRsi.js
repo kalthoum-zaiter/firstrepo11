@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
+import axios from 'axios';
+import { CircularProgress, Box } from '@mui/material';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -8,89 +10,101 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 } from 'chart.js';
-import axios from 'axios';
 
-// Enregistrement des composants nécessaires pour ChartJS
 ChartJS.register(
   CategoryScale,
   LinearScale,
   PointElement,
   LineElement,
+  TimeScale,
   Title,
   Tooltip,
   Legend
 );
 
 const RSIChart = ({ symbol }) => {
-  const [rsiData, setRsiData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: 'RSI',
-        data: [],
-        borderColor: 'rgb(75, 192, 192)',
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-      },
-    ],
-  });
+  const [chartData, setChartData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRSI = async () => {
+    const fetchRSIData = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/rsi`, { params: { symbol } });
-        const data = response.data;
-
-        if (data && data['Technical Analysis: RSI']) {
-          const rsiValues = data['Technical Analysis: RSI'];
+        // Update the URL to your Flask endpoint
+        const response = await axios.get(`http://localhost:5000/rsi`, { params: { symbol: symbol } });
+        if (response.data && response.data['Technical Analysis: RSI']) {
+          const rsiValues = response.data['Technical Analysis: RSI'];
           const labels = Object.keys(rsiValues).sort();
-          const rsi = labels.map(label => parseFloat(rsiValues[label]['RSI']));
-
-          setRsiData(prevData => ({
-            ...prevData,
-            labels,
-            datasets: [
-              {
-                ...prevData.datasets[0],
-                data: rsi
-              }
-            ]
+          const data = labels.map(label => ({
+            x: label,
+            y: parseFloat(rsiValues[label].RSI)
           }));
+          setChartData({
+            labels,
+            datasets: [{
+              label: 'RSI',
+              data,
+              borderColor: 'rgba(75,192,192,1)',
+              backgroundColor: 'rgba(75,192,192,0.2)',
+              fill: true,
+              tension: 0.4
+            }]
+          });
         }
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching RSI data:', error);
+        setLoading(false);
       }
     };
 
-    fetchRSI();
+    fetchRSIData();
   }, [symbol]);
+
+  if (loading) {
+    return <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+      <CircularProgress />
+    </Box>;
+  }
+
+  if (!chartData) {
+    return <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+      <p>No RSI data available.</p>
+    </Box>;
+  }
 
   const options = {
     scales: {
       x: {
-        type: 'category',
-        title: {
-          display: true,
-          text: 'Date'
+        type: 'time',
+        time: {
+          unit: 'month',
+          tooltipFormat: 'MMM D, YYYY'
         }
       },
       y: {
         beginAtZero: false,
-        title: {
-          display: true,
-          text: 'RSI Value'
+        suggestedMax: 100
+      }
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `RSI: ${context.raw.y.toFixed(2)}`;
+          }
         }
       }
-    }
+    },
+    maintainAspectRatio: false
   };
 
-  return (
-    <div>
-      <h2>RSI Chart</h2>
-      <Line options={options} data={rsiData} />
-    </div>
-  );
+  return <Line data={chartData} options={options} height={400} />;
 };
 
 export default RSIChart;
