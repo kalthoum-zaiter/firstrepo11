@@ -1,23 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from '@mui/material/styles';
 import {
-  AppBar, Box, Toolbar, MenuItem, Button, IconButton, TextField, InputAdornment,
-  Typography, Avatar, Menu, MenuItem as DropdownMenuItem
+  AppBar, Box, Toolbar, IconButton, TextField, InputAdornment, Button, Avatar, Typography, List, ListItem, Paper, Menu, MenuItem
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation for current route
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import Sidebar from '../SideBar/SideBar';
-import PageStocks  from '../PageStocks/PageStocks'; // Import the StockDetails component
 
 const drawerWidth = 240;
 
-export default function Layout({ children, showSidebar, showAppBar, isAuthenticated, user }) {
+export default function Layout({ children, showSidebar, showAppBar }) {
   const theme = useTheme();
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);  // For menu
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(''); // Add state for search input
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false); // For showing the dropdown
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Hook to get the current route
+
+  const stockSuggestions = [
+    { name: 'CAC 40', price: '7 543,85', change: '-0.94%' },
+    { name: 'Nvidia', price: '117,97', change: '+0.081%' },
+    { name: 'S&P 500', price: '5 701,59', change: '-0.21%' },
+    { name: 'Dow Jones Industrial Average', price: '41 950,55', change: '-0.18%' },
+    { name: 'Bitcoin', price: '62 731,40', change: '-0.37%' },
+  ];
+
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (token && userData) {
+      // If token and user data are present, parse and set the user state
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -27,8 +46,31 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
     setAnchorEl(null);
   };
 
+  // Function to handle logout
+  const handleLogout = () => {
+    // Remove token and user data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  
+    // Update user state to null
+    setUser(null);
+  
+    // Close the profile menu
+    handleMenuClose();
+  
+    // Redirect to login page
+    navigate('/signin');
+  };
+  
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  // Function to handle search
+  const handleSearch = (event) => {
+    if (event.key === 'Enter' && searchQuery) {
+      navigate(`/PageStocks/${searchQuery}`);
+    }
   };
 
   return (
@@ -57,47 +99,63 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
                   <MenuIcon />
                 </IconButton>
               )}
-              <TextField
-                variant="outlined"
-                placeholder="Search Stocks & Crypto"
-                sx={{ flex: 1, bgcolor: 'background.paper', borderRadius: 1, width: 400 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
-                }}
-                value={searchQuery} // Bind the input value to the state
-                onChange={(e) => setSearchQuery(e.target.value)} // Update the search query
-              />
+              {/* Show Search TextField only if not on the signin page */}
+              {location.pathname !== '/signin' && (
+                <Box sx={{ position: 'relative', width: 400 }}>
+                  <TextField
+                    variant="outlined"
+                    placeholder="Search Stocks & Crypto"
+                    sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 1 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)} // Show suggestions on focus
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Hide suggestions on blur
+                    onKeyDown={handleSearch}
+                  />
+                  {/* Suggestion Dropdown */}
+                  {showSuggestions && (
+                    <Paper sx={{
+                      position: 'absolute',
+                      width: '100%',
+                      maxHeight: 200,
+                      overflowY: 'auto',
+                      zIndex: 10,
+                    }}>
+                      <List>
+                        {stockSuggestions.map((stock, index) => (
+                          <ListItem key={index} button>
+                            <Typography variant="body1">{stock.name}</Typography>
+                            <Typography variant="body2" sx={{ marginLeft: 'auto' }}>
+                              {stock.price} ({stock.change})
+                            </Typography>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Paper>
+                  )}
+                </Box>
+              )}
               <Box sx={{ flexGrow: 1 }} />
-              {isAuthenticated && user ? (
+              {user ? (
                 <>
                   <Typography variant="h6" sx={{ marginRight: 2 }}>{user.name}</Typography>
-                  <IconButton
-                    edge="end"
-                    aria-label="account of current user"
-                    aria-controls="primary-search-account-menu"
-                    aria-haspopup="true"
-                    onClick={handleProfileMenuOpen}
-                    color="inherit"
-                  >
+                  <IconButton onClick={handleProfileMenuOpen}>
                     <Avatar alt={user.name} src={user.avatarUrl || ''} />
                   </IconButton>
                   <Menu
                     anchorEl={anchorEl}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     keepMounted
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                     open={Boolean(anchorEl)}
                     onClose={handleMenuClose}
                   >
-                    <DropdownMenuItem onClick={() => navigate('/profile')}>Profile</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => {
-                      handleMenuClose();
-                      // Add your logout logic here
-                    }}>Logout</DropdownMenuItem>
+                    <MenuItem onClick={handleLogout}>Se Déconnecter</MenuItem>
                   </Menu>
                 </>
               ) : (
@@ -114,7 +172,7 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            p: 10,
             bgcolor: 'white',
             width: `calc(100% - ${showSidebar ? (sidebarOpen ? drawerWidth : 0) : 0}px)`,
             marginLeft: `${showSidebar ? (sidebarOpen ? drawerWidth : 0) : 0}px`,
@@ -122,12 +180,11 @@ export default function Layout({ children, showSidebar, showAppBar, isAuthentica
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),
-            marginTop: showAppBar ? '64px' : '0px',
+            marginTop: showAppBar ? '50px' : '0px',
             minHeight: '100vh',
           }}
         >
-          {/* Render the StockDetails component and pass the search query */}
-          <PageStocks query={searchQuery} />
+          
           {children}
         </Box>
       </Box>

@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginForm from './components/signin/signin';
 import Register from './pages/Register';
-import Vitrine from './components/Vitrine/Vitrine';
+import AccueilG from './components/AccueilG/AccueilG';
 import SymbolInfo from './components/TickerInfo/TickerInfo'; 
 import AppRoutes from './AppRoutes';
 import Layout from './components/Layout/Layout';
+
 
 const AppRouter = ({ mode, handleModeChange }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,12 +20,12 @@ const AppRouter = ({ mode, handleModeChange }) => {
     <Router>
       <Routes>
         <Route path="/" element={
-          <Layout showSidebar={false} showAppBar={true} isAuthenticated={isAuthenticated}>
-            <Vitrine />
+          <Layout showSidebar={true} showAppBar={true} isAuthenticated={isAuthenticated}>
+            <AccueilG/>
           </Layout>
         } />
         <Route path="/signin" element={
-          <Layout showSidebar={false} showAppBar={true} isAuthenticated={isAuthenticated}>
+          <Layout showSidebar={false} showAppBar={true} isAuthenticated={isAuthenticated} showSearchAppbar={true}>
             <LoginForm mode={mode} handleModeChange={handleModeChange} setIsAuthenticated={setIsAuthenticated} />
           </Layout>
         } />

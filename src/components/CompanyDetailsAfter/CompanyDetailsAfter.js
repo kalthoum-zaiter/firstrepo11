@@ -4,18 +4,16 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import moment from 'moment';
 
-const Company = () => {
-  const { tickerName } = useParams();  // Extract ticker from URL parameters
+const News = () => {
+  const { tickerName } = useParams();  // Extract ticker from URL parameters (if any)
   const [newsData, setNewsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchNews = async (ticker) => {
+    const fetchNews = async (url, params = {}) => {
       try {
-        const response = await axios.get('http://localhost:5000/api/news', {
-          params: { ticker }
-        });
+        const response = await axios.get(url, { params });
         setNewsData(response.data);
       } catch (err) {
         setError('Failed to fetch news');
@@ -25,7 +23,11 @@ const Company = () => {
     };
 
     if (tickerName) {
-      fetchNews(tickerName);
+      // Fetch company-specific news if tickerName is present
+      fetchNews('http://localhost:5000/api/news', { ticker: tickerName });
+    } else {
+      // Fetch generic financial news if no tickerName is provided
+      fetchNews('http://localhost:5000/api/newsGenerique');
     }
   }, [tickerName]);
 
@@ -48,7 +50,7 @@ const Company = () => {
   if (!newsData.length) {
     return (
       <Box sx={{ textAlign: 'center', mt: 4 }}>
-        <Typography>No news available for {tickerName}</Typography>
+        <Typography>No news available for {tickerName ? tickerName : 'generic finance'}</Typography>
       </Box>
     );
   }
@@ -69,13 +71,13 @@ const Company = () => {
   return (
     <Box sx={{ width: '90%', margin: 'auto', mt: 4 }}>
       <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-        Actualités
+        {tickerName ? `News for ${tickerName}` : 'General Financial News'}
       </Typography>
       <Grid container spacing={2}>
         {newsData.map((newsItem, index) => (
           <Grid item xs={12} key={index}>
             <Typography variant="body2" sx={{ color: '#888', mb: 1 }}>
-              {newsItem.source} • {timeSincePublication(newsItem.published)}
+              {newsItem.source || 'Unknown Source'} • {timeSincePublication(newsItem.published)}
             </Typography>
             <Typography
               variant="body1"
@@ -92,4 +94,4 @@ const Company = () => {
   );
 };
 
-export default Company;
+export default News;

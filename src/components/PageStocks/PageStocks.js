@@ -4,7 +4,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Line } from 'react-chartjs-2';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import Company from '../CompanyDetailsAfter/CompanyDetailsAfter';
+import News from '../CompanyDetailsAfter/CompanyDetailsAfter';
 import TickerInfo from '../APropos/APropos';
 import { useNavigate, useLocation } from 'react-router-dom';
 import io from 'socket.io-client';  // Importing socket.io-client
@@ -75,33 +75,28 @@ const StockDetails = () => {
   const { tickerName } = useParams();
   const [stockData, setStockData] = useState(null);
   const [currentPrice, setCurrentPrice] = useState(null); 
+  const [isIndex, setIsIndex] = useState(false);  // New state to detect if the search is for an index
   const navigate = useNavigate();
   const location = useLocation();
 
   const tabs = ['Overview', 'Financials', 'News', 'Technicals', 'Forecast'];
   const currentTab = location.pathname.split('/')[1] || 'Financials';
+
   const fetchStockData = async (ticker) => {
     try {
       const response = await axios.get('http://localhost:5000/get_stock_data', { params: { ticker } });
       setStockData(response.data);
-      setCurrentPrice(response.data.price);  // Set the initial price
+      setCurrentPrice(response.data.price);
+      
+      // Check if it's an index by using some logic or flag from the API response
+      setIsIndex(response.data.is_index || false);  // Assuming your API sets a flag for indices
     } catch (error) {
       console.error('Failed to fetch stock data:', error);
     }
   };
 
-  if (tickerName) {
-    fetchStockData(tickerName);
-  };
-
   useEffect(() => {
-    const fetchStockData = async () => {
-      const response = await axios.get(`http://localhost:5000/get_stock_data?ticker=${tickerName}`);
-      setStockData(response.data);
-      setCurrentPrice(response.data.price);
-    };
-
-    fetchStockData();
+    fetchStockData(tickerName);
 
     const socket = io('http://localhost:5000');
     socket.on('price_update', data => {
@@ -148,8 +143,8 @@ const StockDetails = () => {
     { label: 'Year Range', value: yearRange },
     { label: 'Market Cap', value: marketCap },
     { label: 'Avg Volume', value: avgVolume },
-    { label: 'P/E Ratio', value: peRatio },
-    { label: 'Dividend Yield', value: dividendYield },
+    { label: 'P/E Ratio', value: isIndex ? 'N/A' : peRatio },  // Indices typically don't have P/E ratio
+    { label: 'Dividend Yield', value: isIndex ? 'N/A' : dividendYield },  // Similar for dividend yield
     { label: 'Primary Exchange', value: primaryExchange }
   ];
 
@@ -159,33 +154,52 @@ const StockDetails = () => {
     <Box sx={{ width: '90%', margin: 'auto', mt: 4 }}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
-          <Typography variant="h4" sx={{  color: '#333' }}>
-            {stockData.company_name} ({tickerName})
+          <Typography variant="h4" sx={{ color: '#333' }}>
+            {stockData.company_name || tickerName} ({isIndex ? 'Index' : 'Stock'}) {/* Dynamic label */}
           </Typography>
         </Grid>
 
         <Grid item>
-        <Button
-  variant="contained"
-  startIcon={<CheckCircleIcon />}
-  sx={{
-    textTransform: 'none',
-    borderRadius: '30px',
-    marginRight: 1,
-    backgroundColor: '#f5f5f5',
-    color: '#000',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-    fontSize: '1.2rem',
-    padding: '10px 10px',
-    '&:hover': {
-      backgroundColor: '#e0e0e0',
-    }
-  }}
-  onClick={() => navigate('/WatchList')} // Navigate to the desired page
->
-  Add to watchlist
-</Button>
-
+          <Button
+            variant="contained"
+            startIcon={<CheckCircleIcon />}
+            sx={{
+              textTransform: 'none',
+              borderRadius: '30px',
+              marginRight: 1,
+              backgroundColor: '#f5f5f5',
+              color: '#000',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+              fontSize: '1.2rem',
+              padding: '10px 10px',
+              '&:hover': {
+                backgroundColor: '#e0e0e0',
+              },
+            }}
+            onClick={() => navigate('/WatchList')} // Navigate to the desired page
+          >
+            Add to watchlist
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<CheckCircleIcon />}
+            sx={{
+              textTransform: 'none',
+              borderRadius: '30px',
+              marginRight: 1,
+              backgroundColor: '#f5f5f5',
+              color: '#000',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+              fontSize: '1.2rem',
+              padding: '10px 10px',
+              '&:hover': {
+                backgroundColor: '#e0e0e0',
+              },
+            }}
+            onClick={() => navigate('/WatchList')} // Navigate to the desired page
+          >
+            Add to watchlist
+          </Button>
         </Grid>
       </Grid>
 
@@ -197,7 +211,6 @@ const StockDetails = () => {
           alignItems="center"
           sx={{ padding: '12px', borderRadius: '8px' }}
         >
-          {/* Prix principal */}
           <Box
             sx={{
               display: 'flex',
@@ -209,12 +222,10 @@ const StockDetails = () => {
             }}
           >
             <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-             {safeToFixed(currentPrice)}
+              {safeToFixed(currentPrice)}
             </Typography>
           </Box>
 
-
-          {/* Variation en pourcentage */}
           <Box
             sx={{
               display: 'flex',
@@ -231,8 +242,6 @@ const StockDetails = () => {
             </Typography>
           </Box>
 
-
-          {/* Pourcentage de changement */}
           <Box
             sx={{
               display: 'flex',
@@ -249,7 +258,6 @@ const StockDetails = () => {
           </Box>
         </Box>
 
-        {/* Informations après les heures */}
         <Typography variant="body2" sx={{ mt: 1 }}>
           After Hours: {stockData.after_hours_price ? (
             <span style={{ color: 'red' }}>
@@ -260,7 +268,6 @@ const StockDetails = () => {
           )}
         </Typography>
 
-        {/* Sources */}
         <Typography variant="body2" sx={{ color: '#888' }}>
           Data from Yahoo Finance · Disclaimer
         </Typography>
@@ -313,7 +320,7 @@ const StockDetails = () => {
         </Grid>
 
         <Grid item xs={8}>
-          <Company symbol={tickerName}/>
+          <News symbol={tickerName}/>
         </Grid>
         <Grid item xs={4}>
           <TickerInfo symbol={tickerName} />

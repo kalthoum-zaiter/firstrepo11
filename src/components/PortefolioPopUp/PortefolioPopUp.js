@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Modal, Card, CardContent } from '@mui/material';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const PortfolioPopup = ({ open, onClose, onSave }) => {
   const [portfolioName, setPortfolioName] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleSave = () => {
+
+  const handleSave = async () => {
     if (portfolioName.trim()) {
-      onSave(portfolioName);
-      setPortfolioName('');
+      try {
+        await onSave(portfolioName);
+        setPortfolioName('');
+        setError('');
+      } catch (err) {
+        setError('Une erreur s\'est produite lors de l\'ajout du portefeuille.');
+      }
+    } else {
+      setError('Le nom du portefeuille est requis.');
     }
   };
 
@@ -26,6 +37,11 @@ const PortfolioPopup = ({ open, onClose, onSave }) => {
             <Typography variant="h6" gutterBottom>
               Créer un portefeuille
             </Typography>
+            {error && (
+              <Typography color="error" variant="body2">
+                {error}
+              </Typography>
+            )}
             <TextField
               fullWidth
               label="Nom du portefeuille"
@@ -37,7 +53,14 @@ const PortfolioPopup = ({ open, onClose, onSave }) => {
               <Button variant="outlined" onClick={onClose}>
                 Annuler
               </Button>
-              <Button variant="contained" onClick={handleSave} disabled={!portfolioName.trim()}>
+              <Button
+  variant="contained"
+  disabled={!portfolioName.trim()} // Disable the button if the portfolio name is empty
+  onClick={() => {
+    handleSave(); // First, trigger the save action
+    navigate('/portefeuilles'); // Then, navigate to the desired page
+  }}
+>
                 Enregistrer
               </Button>
             </Box>

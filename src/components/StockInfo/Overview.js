@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Button, Divider, Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
-import ShareIcon from '@mui/icons-material/Share';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Box, Typography, Grid,  Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
+
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
