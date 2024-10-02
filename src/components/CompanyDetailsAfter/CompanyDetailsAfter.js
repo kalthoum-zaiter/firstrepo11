@@ -48,6 +48,7 @@ const News = () => {
   }
 
   if (!newsData.length) {
+    
     return (
       <Box sx={{ textAlign: 'center', mt: 4 }}>
         <Typography>No news available for {tickerName ? tickerName : 'generic finance'}</Typography>

@@ -5,7 +5,6 @@ import SignUp from './components/RegisterForm/RegisterForm';
 import Portf from './components/Portf/Portf';
 import StockData from './components/teststockinfo/teststockinfo';
 import CompanyInfo from './components/teststockinfo/teststockinfo';
-import StockTrend from './components/Vitrine/Vitrine';
 import TechnicalIndicator from './components/TechnicalIndicator/TechnicalIndicator';
 import App from './components/InformationStock/InformationStock';
 import PageStocks from './components/PageStocks/PageStocks';
@@ -58,12 +57,7 @@ const AppRoutes = [
     sidebar: true,
     showAppBar: true
   },
-  {
-    path: '/stockTrend',
-    element: <StockTrend />,
-    sidebar: true,
-    showAppBar: true
-  },
+  
   {
     path: '/stock/:tickerName/technicalanalysis',
     element: <TechnicalIndicator />,

@@ -16,6 +16,8 @@ import {
   PointElement,
   Filler
 } from 'chart.js';
+import AddIcon from '@mui/icons-material/Add';
+
 
 ChartJS.register(
   LineElement,
@@ -79,7 +81,7 @@ const StockDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const tabs = ['Overview', 'Financials', 'News', 'Technicals', 'Forecast'];
+  const tabs = ['Overview', 'Financials', 'Technicals', 'Forecast'];
   const currentTab = location.pathname.split('/')[1] || 'Financials';
 
   const fetchStockData = async (ticker) => {
@@ -155,14 +157,15 @@ const StockDetails = () => {
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h4" sx={{ color: '#333' }}>
-            {stockData.company_name || tickerName} ({isIndex ? 'Index' : 'Stock'}) {/* Dynamic label */}
+            {stockData.company_name || tickerName} {/* Dynamic label */}
           </Typography>
         </Grid>
 
         <Grid item>
           <Button
             variant="contained"
-            startIcon={<CheckCircleIcon />}
+            startIcon={      <AddIcon />
+            }
             sx={{
               textTransform: 'none',
               borderRadius: '30px',
@@ -177,29 +180,10 @@ const StockDetails = () => {
               },
             }}
             onClick={() => navigate('/WatchList')} // Navigate to the desired page
-          >
-            Add to watchlist
+          >  Suivre
+
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<CheckCircleIcon />}
-            sx={{
-              textTransform: 'none',
-              borderRadius: '30px',
-              marginRight: 1,
-              backgroundColor: '#f5f5f5',
-              color: '#000',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-              fontSize: '1.2rem',
-              padding: '10px 10px',
-              '&:hover': {
-                backgroundColor: '#e0e0e0',
-              },
-            }}
-            onClick={() => navigate('/WatchList')} // Navigate to the desired page
-          >
-            Add to watchlist
-          </Button>
+       
         </Grid>
       </Grid>
 
@@ -222,7 +206,7 @@ const StockDetails = () => {
             }}
           >
             <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-              {safeToFixed(currentPrice)}
+              {safeToFixed(currentPrice)} $
             </Typography>
           </Box>
 

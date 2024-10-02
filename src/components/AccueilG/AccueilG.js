@@ -177,9 +177,8 @@ const AccueilG = () => {
       {/* Portfolio Popup */}
       <PortfolioPopup open={isPopupOpen} onClose={handleClosePopup} onSave={handleSavePortfolio} />
 
-      <MarketDataList />
 
-      <Grid>
+      <Grid item xs={6}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               >
         <News />
       </Grid>
     </Grid>
