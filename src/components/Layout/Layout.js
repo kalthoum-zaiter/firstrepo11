@@ -20,13 +20,7 @@ export default function Layout({ children, showSidebar, showAppBar }) {
   const navigate = useNavigate();
   const location = useLocation(); // Hook to get the current route
 
-  const stockSuggestions = [
-    { name: 'CAC 40', price: '7 543,85', change: '-0.94%' },
-    { name: 'Nvidia', price: '117,97', change: '+0.081%' },
-    { name: 'S&P 500', price: '5 701,59', change: '-0.21%' },
-    { name: 'Dow Jones Industrial Average', price: '41 950,55', change: '-0.18%' },
-    { name: 'Bitcoin', price: '62 731,40', change: '-0.37%' },
-  ];
+ 
 
   useEffect(() => {
     // Retrieve user data from localStorage
@@ -69,7 +63,7 @@ export default function Layout({ children, showSidebar, showAppBar }) {
   // Function to handle search
   const handleSearch = (event) => {
     if (event.key === 'Enter' && searchQuery) {
-      navigate(`/PageStocks/${searchQuery}`);
+      navigate(`/overview/${searchQuery}`);
     }
   };
 
@@ -104,7 +98,7 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                 <Box sx={{ position: 'relative', width: 400 }}>
                   <TextField
                     variant="outlined"
-                    placeholder="Search Stocks & Crypto"
+                    placeholder="Search Stocks "
                     sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 1 }}
                     InputProps={{
                       startAdornment: (
@@ -115,9 +109,8 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                     }}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onFocus={() => setShowSuggestions(true)} // Show suggestions on focus
+                   /*  onFocus={() => setShowSuggestions(true)}*/ // Show suggestions on focus
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Hide suggestions on blur
-                    onKeyDown={handleSearch}
                   />
                   {/* Suggestion Dropdown */}
                   {showSuggestions && (
@@ -128,16 +121,7 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                       overflowY: 'auto',
                       zIndex: 10,
                     }}>
-                      <List>
-                        {stockSuggestions.map((stock, index) => (
-                          <ListItem key={index} button>
-                            <Typography variant="body1">{stock.name}</Typography>
-                            <Typography variant="body2" sx={{ marginLeft: 'auto' }}>
-                              {stock.price} ({stock.change})
-                            </Typography>
-                          </ListItem>
-                        ))}
-                      </List>
+                   
                     </Paper>
                   )}
                 </Box>

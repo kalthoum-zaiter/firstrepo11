@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Box, Typography, Chip, Grid } from '@mui/material';
-import ListAltIcon from '@mui/icons-material/ListAlt'; // Icône pour les listes
-import AddIcon from '@mui/icons-material/Add'; // Icône pour ajouter une liste
+import ListAltIcon from '@mui/icons-material/ListAlt'; // Icon for lists
+import AddIcon from '@mui/icons-material/Add'; // Icon to add a list
+import axios from 'axios'; // For API requests
+import { useNavigate } from 'react-router-dom';
 
 const UserLists = ({ lists }) => {
   return (
     <Box sx={{ padding: 2 }}>
-  
-
       <Grid container spacing={2}>
         {lists.map((list, index) => (
           <Grid item key={index}>
@@ -16,9 +16,6 @@ const UserLists = ({ lists }) => {
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <ListAltIcon sx={{ marginRight: '5px' }} />
                   {list.name}
-                  <Typography variant="body2" sx={{ marginLeft: '5px' }}>
-                    {list.count}
-                  </Typography>
                 </Box>
               }
               variant="outlined"
@@ -31,7 +28,7 @@ const UserLists = ({ lists }) => {
           </Grid>
         ))}
 
-        {/* Ajouter nouvelle liste */}
+        {/* Add new list button */}
         <Grid item>
           <Button
             startIcon={<AddIcon />}
@@ -42,7 +39,7 @@ const UserLists = ({ lists }) => {
               fontSize: '16px',
             }}
           >
-            Nouvelle liste
+            New List
           </Button>
         </Grid>
       </Grid>
@@ -50,14 +47,45 @@ const UserLists = ({ lists }) => {
   );
 };
 
-// Exemple de données
-const sampleLists = [
-  { name: 'Ma liste', count: 3 },
-  { name: 'AA', count: 1 },
-];
-
 const ListeUser = () => {
-  return <UserLists lists={sampleLists} />;
+  const [lists, setLists] = useState([]); // State to store the lists
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLists = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Fetch the JWT token from localStorage
+        const response = await axios.get('http://127.0.0.1:5000/users/lists', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          
+        });
+
+        setLists(response.data.lists); // Update state with fetched lists
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching lists:', error);
+        setError('Failed to fetch lists.');
+        setLoading(false);
+      }
+    };
+
+    fetchLists(); // Call the function to fetch lists on component mount
+  }, []);
+
+  // Handle loading and error states
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
+
+  return <UserLists lists={lists} />;
 };
 
 export default ListeUser;

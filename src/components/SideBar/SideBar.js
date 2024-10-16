@@ -30,7 +30,6 @@ const Sidebar = ({ open, onClose }) => {
       title: 'Main',
       items: [
         { text: 'Accueil', icon: <HomeIcon color="primary" /> },
-        { text: 'Tendances du marché', icon: <QueryStatsIcon color="primary" /> },
       ],
     },
     {

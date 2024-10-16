@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Static Chart</title>
+  </head>
+  <body>
+    <h2>Yahoo Finance BTC-USD Chart</h2>
+    <div id="tvchart"></div>
+  </body>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <script type="text/javascript" src="index.js"></script>
+</html>
+
+<script>
+// Define chart properties
+const chartProperties = {
+  width: 1500,
+  height: 600,
+  timeScale: {
+    timeVisible: true,
+    secondsVisible: false,
+  }
+}
+
+// Create chart and candlestick series
+const domElement = document.getElementById('tvchart');
+const chart = LightweightCharts.createChart(domElement, chartProperties);
+const candleSeries = chart.addCandlestickSeries();
+
+// Function to fetch data from Yahoo Finance
+function fetchYahooFinanceData() {
+  // Replace with the Yahoo Finance URL (unofficial API URL in this case)
+  const url = 'https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1mo&interval=1d';
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      const chartData = data.chart.result[0].indicators.quote[0];
+      const timestamps = data.chart.result[0].timestamp;
+
+      // Map the data to the format needed for the candlestick chart
+      const cdata = timestamps.map((timestamp, index) => {
+        return {
+          time: timestamp,
+          open: chartData.open[index],
+          high: chartData.high[index],
+          low: chartData.low[index],
+          close: chartData.close[index]
+        };
+      });
+
+      candleSeries.setData(cdata);
+    })
+    .catch(err => console.log(err));
+}
+
+// Fetch data once initially
+fetchYahooFinanceData();
+
+// Dynamic updates using WebSocket (you can customize this part if you have live data)
+const socket = io.connect('http://127.0.0.1:4000/');
+socket.on('KLINE', (pl) => {
+  candleSeries.update(pl);
+});
+</script>

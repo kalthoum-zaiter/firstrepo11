@@ -17,7 +17,15 @@ import AccueilG from './components/AccueilG/AccueilG';
 import WebSocketComponent from './components/RealTime/RealTime';
 import MarketTrends from './components/Accueil/Accueil';
 import  PortfeuilleConsultation from './components/PortefeuilleConsultation/PortefeuilleConsultation';
+import Financials from './components/Financials/Financials';
 const AppRoutes = [
+  {
+
+    path: '/financials/:tickerName',
+    element: <Financials />,
+    sidebar: true,
+    showAppBar: true
+  },
   {
     path: '/topstocks',
     element: <TopRanked />,
@@ -71,19 +79,19 @@ const AppRoutes = [
     showAppBar: true
   },
   {
-    path: '/PageStocks/:tickerName',
+    path: '/overview/:tickerName',
     element: <PageStocks />,
     sidebar: true,
     showAppBar: true
   },
   {
-    path: '/TickerInfo/:tickerName',
+    path: '/TickerInfo/:tickerName/:tickerName',
     element: <TickerInfo />,
     sidebar: false,
     showAppBar: false
   },
   {
-    path: '/Forecast',
+    path: '/Forecast/:tickerName',
     element: <StockPrediction />,
     sidebar: false,
     showAppBar: true
