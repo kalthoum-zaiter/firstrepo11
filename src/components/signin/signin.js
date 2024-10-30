@@ -7,7 +7,7 @@ export default function SignIn({ setIsAuthenticated }) {
   const navigate = useNavigate();
   const [error, setError] = useState('');
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event) => { 
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get('email');
@@ -26,12 +26,11 @@ export default function SignIn({ setIsAuthenticated }) {
         const result = await response.json();
         const token = result.access_token;
         const username = result.user.name;
-        const portefeuille = result.user.portefeuille; // Récupère les données du portefeuille
+        const portefeuille = result.user.portefeuille;
   
-        // Stocke le token, le nom et le portefeuille de l'utilisateur dans localStorage
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify({ name: username, portefeuille }));
-         
+  
         setIsAuthenticated(true);
         navigate('/accueil');
       } else {

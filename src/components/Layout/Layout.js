@@ -3,10 +3,11 @@ import { ThemeProvider, useTheme } from '@mui/material/styles';
 import {
   AppBar, Box, Toolbar, IconButton, TextField, InputAdornment, Button, Avatar, Typography, List, ListItem, Paper, Menu, MenuItem
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation for current route
+import { useNavigate, useLocation,Link } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import Sidebar from '../SideBar/SideBar';
+import StockInSGHT from '../Layout/StockInSGHT.png'; // Your logo image
 
 const drawerWidth = 240;
 
@@ -16,18 +17,16 @@ export default function Layout({ children, showSidebar, showAppBar }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false); // For showing the dropdown
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]); // List of suggestions
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const location = useLocation(); // Hook to get the current route
 
- 
-
+  // Fetch user data from localStorage
   useEffect(() => {
-    // Retrieve user data from localStorage
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (token && userData) {
-      // If token and user data are present, parse and set the user state
       setUser(JSON.parse(userData));
     }
   }, []);
@@ -40,31 +39,66 @@ export default function Layout({ children, showSidebar, showAppBar }) {
     setAnchorEl(null);
   };
 
-  // Function to handle logout
   const handleLogout = () => {
-    // Remove token and user data from localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  
-    // Update user state to null
     setUser(null);
-  
-    // Close the profile menu
     handleMenuClose();
-  
-    // Redirect to login page
     navigate('/signin');
   };
-  
+
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Function to handle search
+  // Fetch stock data from Flask backend
+  const fetchStockData = async (query) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/stocks?q=${query}`);
+      const data = await response.json();
+      if (data.error) {
+        setFilteredSuggestions([]); // Clear suggestions on error
+      } else {
+        setFilteredSuggestions(data); // Populate suggestions with valid data
+      }
+    } catch (error) {
+    }
+  };
+
+  // Handle search input change and trigger stock data fetch
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+
+    if (value) {
+      fetchStockData(value); // Fetch stock suggestions
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false); // Hide suggestions if input is empty
+    }
+  };
+
+  // Handle when the user presses Enter or selects a suggestion
   const handleSearch = (event) => {
     if (event.key === 'Enter' && searchQuery) {
-      navigate(`/overview/${searchQuery}`);
+      const selectedStock = filteredSuggestions.find(stock =>
+        stock.ticker.toLowerCase() === searchQuery.toLowerCase() ||
+        stock.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      if (selectedStock) {
+        setShowSuggestions(false); // Hide suggestions on enter press
+        navigate(`/overview/${selectedStock.ticker}`); // Navigate to overview page
+      } else {
+        alert('No matching stock found');
+      }
     }
+  };
+
+  // Handle when a suggestion is clicked
+  const handleSuggestionClick = (ticker) => {
+    setShowSuggestions(false); // Hide suggestions after clicking
+    navigate(`/overview/${ticker}`); // Navigate to the selected company's overview page
   };
 
   return (
@@ -93,12 +127,21 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                   <MenuIcon />
                 </IconButton>
               )}
-              {/* Show Search TextField only if not on the signin page */}
+
+              {/* Logo */}
+
+            <Box>
+              <Link to="/accueil"> {/* Le lien vers la page principale */}
+               <img src={StockInSGHT} alt="StockInsight Logo" style={{ width: '200px', height: 'auto', cursor: 'pointer' }} />
+              </Link>
+            </Box>
+
+              {/* Search Bar */}
               {location.pathname !== '/signin' && (
-                <Box sx={{ position: 'relative', width: 400 }}>
+                <Box sx={{ position: 'relative', width: 400, ml: 3 }}>
                   <TextField
                     variant="outlined"
-                    placeholder="Search Stocks "
+                    placeholder="Search Stocks or Companies"
                     sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 1 }}
                     InputProps={{
                       startAdornment: (
@@ -108,12 +151,14 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                       ),
                     }}
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                   /*  onFocus={() => setShowSuggestions(true)}*/ // Show suggestions on focus
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Hide suggestions on blur
+                    onChange={handleSearchChange}
+                    onKeyDown={handleSearch}
+                    onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    autoComplete="off" // Correct use of this attribute
                   />
-                  {/* Suggestion Dropdown */}
-                  {showSuggestions && (
+
+                  {showSuggestions && filteredSuggestions.length > 0 && (
                     <Paper sx={{
                       position: 'absolute',
                       width: '100%',
@@ -121,12 +166,25 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                       overflowY: 'auto',
                       zIndex: 10,
                     }}>
-                   
+                      <List>
+                        {filteredSuggestions.map((suggestion) => (
+                          <ListItem
+                            key={suggestion.ticker}
+                            button
+                            onClick={() => handleSuggestionClick(suggestion.ticker)}
+                          >
+                            {suggestion.ticker} - {suggestion.name}
+                          </ListItem>
+                        ))}
+                      </List>
                     </Paper>
                   )}
                 </Box>
               )}
+
               <Box sx={{ flexGrow: 1 }} />
+
+              {/* User Profile */}
               {user ? (
                 <>
                   <Typography variant="h6" sx={{ marginRight: 2 }}>{user.name}</Typography>
@@ -139,7 +197,7 @@ export default function Layout({ children, showSidebar, showAppBar }) {
                     open={Boolean(anchorEl)}
                     onClose={handleMenuClose}
                   >
-                    <MenuItem onClick={handleLogout}>Se Déconnecter</MenuItem>
+                    <MenuItem onClick={handleLogout}>Log Out</MenuItem>
                   </Menu>
                 </>
               ) : (
@@ -151,7 +209,11 @@ export default function Layout({ children, showSidebar, showAppBar }) {
             </Toolbar>
           </AppBar>
         )}
+
+        {/* Sidebar */}
         {showSidebar && <Sidebar open={sidebarOpen} onClose={toggleSidebar} />}
+
+        {/* Main Content Area */}
         <Box
           component="main"
           sx={{
@@ -168,7 +230,6 @@ export default function Layout({ children, showSidebar, showAppBar }) {
             minHeight: '100vh',
           }}
         >
-          
           {children}
         </Box>
       </Box>

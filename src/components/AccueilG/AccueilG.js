@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Box, Typography, Grid, Card, CardContent, Divider } from '@mui/material';
-import IndiceVar from '../ListeIndiceVar/ListeIndiceVar';
-import ListeUser from '../ListeUser.js/ListeUser';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import PortfolioManager from '../PORTFOLIO/PORTFOLIO';
 import PortfolioPopup from '../PortefolioPopUp/PortefolioPopUp';
 import { useNavigate } from 'react-router-dom';
-import MarketDataList from '../MarketDataList/MarketDataList';
-import Accueil from '../Accueil/Accueil';
 import News from '../CompanyDetailsAfter/CompanyDetailsAfter';
 import axios from 'axios';
 
 const AccueilG = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [portfolios, setPortfolios] = useState([]); // State to store portfolio data
+  const [portefeuilles, setPortefeuilles] = useState([]); // State to store portfolio data
   const navigate = useNavigate();
 
   const handleOpenPopup = () => {
@@ -34,8 +29,6 @@ const AccueilG = () => {
   const handleNavigation = (path) => {
     navigate(path); // Use navigate to change the route
   };
-
-  const [portefeuilles, setPortefeuilles] = useState([]);
 
   useEffect(() => {
     const fetchPortefeuilles = async () => {
@@ -61,21 +54,18 @@ const AccueilG = () => {
     <Grid container spacing={4} sx={{ padding: 2 }}>
       {/* Left Column */}
       <Grid item xs={12} md={8}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Valeurs aux plus fortes variations de vos listes
-        </Typography>
-        <Divider sx={{ my: 2 }} />
-        <IndiceVar />
-        <Typography variant="h6" sx={{ mb: 0 }}>
-          Vos listes
-        </Typography>
-        <ListeUser />
+       
+       {/*  <Typography variant="h6" sx={{ mb: 0 }}>
+        </Typography>*/}
+        
+        <News />
+      
       </Grid>
 
       {/* Right Column */}
       <Grid item xs={12} md={4}>
         {/* Portfolio Card */}
-        <Card variant="outlined" sx={{ width: '80%', mb: 4, p: 2, borderRadius: 3 }}>
+        <Card variant="outlined" sx={{ width: '80%', mb: 4, borderRadius: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
               Vos portefeuilles
@@ -90,11 +80,18 @@ const AccueilG = () => {
               ))
             ) : (
               <Typography variant="body2" gutterBottom>
-                Aucun portefeuille disponible.
-              </Typography>
+Créez un portefeuille pour visualiser vos investissements en un seul endroit.              </Typography>
             )}
 
-            <PortfolioManager portfolios={portefeuilles} />
+            {/* + Nouveau Portefeuille Button */}
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={handleOpenPopup}
+            >
+              + Nouveau Portefeuille
+            </Button>
           </CardContent>
         </Card>
 
@@ -177,10 +174,7 @@ const AccueilG = () => {
       {/* Portfolio Popup */}
       <PortfolioPopup open={isPopupOpen} onClose={handleClosePopup} onSave={handleSavePortfolio} />
 
-
-      <Grid item xs={6}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               >
-        <News />
-      </Grid>
+      
     </Grid>
   );
 };

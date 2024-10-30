@@ -18,7 +18,16 @@ import WebSocketComponent from './components/RealTime/RealTime';
 import MarketTrends from './components/Accueil/Accueil';
 import  PortfeuilleConsultation from './components/PortefeuilleConsultation/PortefeuilleConsultation';
 import Financials from './components/Financials/Financials';
+import  PageStocksTechnical from './components/PageStocksTechnical/PageStocksTechnical'
 const AppRoutes = [
+  {
+
+    path: '/technicals/:tickerName',
+    element: < PageStocksTechnical />,
+    sidebar: true,
+    showAppBar: true
+  },
+
   {
 
     path: '/financials/:tickerName',
@@ -93,7 +102,7 @@ const AppRoutes = [
   {
     path: '/Forecast/:tickerName',
     element: <StockPrediction />,
-    sidebar: false,
+    sidebar: true,
     showAppBar: true
   },
   {

@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Box, Button, TextField, Typography, Modal, Card, CardContent } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const PortfolioPopup = ({ open, onClose, onSave }) => {
   const [portfolioName, setPortfolioName] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-
   const handleSave = async () => {
     if (portfolioName.trim()) {
       try {
-        await onSave(portfolioName);
-        setPortfolioName('');
-        setError('');
+        // Make the API call to save the portfolio
+        const token = localStorage.getItem('token'); // Retrieve the JWT token from localStorage
+        const response = await axios.post('http://127.0.0.1:5000/portfolios', 
+          { name: portfolioName }, // Send the portfolio name in the request body
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Pass JWT token in the Authorization header
+            },
+          }
+        );
+
+        // On successful response, reset state and close modal
+        if (response.status === 201) {
+          setPortfolioName('');
+          setError('');
+          onSave(); // Trigger any callback after successful save
+          onClose(); // Close the modal
+          navigate('/portefeuilles'); // Navigate to the portfolios page
+        }
       } catch (err) {
         setError('Une erreur s\'est produite lors de l\'ajout du portefeuille.');
       }
@@ -54,13 +70,10 @@ const PortfolioPopup = ({ open, onClose, onSave }) => {
                 Annuler
               </Button>
               <Button
-  variant="contained"
-  disabled={!portfolioName.trim()} // Disable the button if the portfolio name is empty
-  onClick={() => {
-    handleSave(); // First, trigger the save action
-    navigate('/portefeuilles'); // Then, navigate to the desired page
-  }}
->
+                variant="contained"
+                disabled={!portfolioName.trim()} // Disable the button if the portfolio name is empty
+                onClick={handleSave} // Trigger the save function when the button is clicked
+              >
                 Enregistrer
               </Button>
             </Box>

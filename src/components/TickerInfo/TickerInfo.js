@@ -25,7 +25,6 @@ const StockWidget = ({ symbol }) => {
           dividendYield: response.data.dividendYield + '%',
         });
       } catch (error) {
-        console.error('Error fetching stock data', error);
       }
     };
     fetchData();

@@ -6,6 +6,7 @@ import AccueilG from './components/AccueilG/AccueilG';
 import SymbolInfo from './components/TickerInfo/TickerInfo'; 
 import AppRoutes from './AppRoutes';
 import Layout from './components/Layout/Layout';
+import { UserProvider } from './UserContext';  // Import UserContext
 
 
 const AppRouter = ({ mode, handleModeChange }) => {
@@ -17,6 +18,8 @@ const AppRouter = ({ mode, handleModeChange }) => {
   }, []);
 
   return (
+    <UserProvider>
+
     <Router>
       <Routes>
         <Route path="/" element={
@@ -48,6 +51,8 @@ const AppRouter = ({ mode, handleModeChange }) => {
         ))}
       </Routes>
     </Router>
+    </UserProvider>
+
   );
 };
 

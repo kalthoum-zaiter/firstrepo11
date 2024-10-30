@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, CircularProgress, Grid, Paper } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import PageStockHeader from '../PageStockHeader/PageStockHeader';
-
+import ForecastPage from '../PageStocksForecast/PageStocksForecast';
 const StockPrediction = () => {
   const [predictionResult, setPredictionResult] = useState(null);
   const [error, setError] = useState(null);
@@ -71,6 +71,9 @@ const StockPrediction = () => {
             )}
           </Paper>
         </Grid>
+      </Grid>
+      <Grid>
+        <ForecastPage></ForecastPage>
       </Grid>
     </Box>
   );

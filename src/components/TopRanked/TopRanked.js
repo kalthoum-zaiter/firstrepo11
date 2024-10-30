@@ -32,7 +32,6 @@ const TopStocks = () => {
                 });
                 setStocks(stocksData);
             } catch (error) {
-                console.error('Error fetching stock data:', error);
             }
         };
 

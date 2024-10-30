@@ -30,9 +30,6 @@ const SymbolInfo = () => {
     return <Typography>Loading...</Typography>;
   }
 
-  if (!stockData || stockData.error) {
-    return <Typography>Error fetching stock data</Typography>;
-  }
 
   // Vérification des valeurs nulles ou indéfinies avant d'utiliser toFixed
   const safeToFixed = (num, decimals = 2) => (num !== undefined && num !== null ? num.toFixed(decimals) : 'N/A');
