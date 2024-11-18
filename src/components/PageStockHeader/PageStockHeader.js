@@ -1,47 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Button, Divider, Tab, Tabs, AppBar, Toolbar } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Grid,
+  Divider,
+  Tabs,
+  Tab,
+  AppBar,
+  Toolbar,
+} from '@mui/material';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import AddIcon from '@mui/icons-material/Add';
-import CheckIcon from '@mui/icons-material/Check';
-import io from 'socket.io-client';  // Importing socket.io-client
+import io from 'socket.io-client';
 
-const FollowButton = () => {
-  const [isFollowing, setIsFollowing] = useState(false);
-
-  const handleButtonClick = () => {
-    setIsFollowing((prevState) => !prevState);
-  };
-
-  return (
-    <Button
-      variant="contained"
-      startIcon={isFollowing ? <CheckIcon /> : <AddIcon />}
-      onClick={handleButtonClick}
-      sx={{
-        textTransform: 'none',
-        borderRadius: '30px',
-        marginRight: 1,
-        backgroundColor: isFollowing ? '#d1e7dd' : '#f5f5f5',
-        color: '#000',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-        fontSize: '1.2rem',
-        padding: '10px 10px',
-        '&:hover': {
-          backgroundColor: isFollowing ? '#bcd0c7' : '#e0e0e0',
-        },
-      }}
-    >
-      {isFollowing ? 'Suivi' : 'Suivre'}
-    </Button>
-  );
-};
+const socket = io('http://localhost:5000'); // Remplacez par l'URL de votre backend Flask si nécessaire
 
 const StockHeader = () => {
   const { tickerName } = useParams();
   const [stockData, setStockData] = useState(null);
-  const [currentPrice, setCurrentPrice] = useState(null);
-  const [isIndex, setIsIndex] = useState(false);
+  const [simulatedPrice, setSimulatedPrice] = useState(null);
+  const [flashColor, setFlashColor] = useState(null); // État pour suivre la couleur de clignotement
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -52,62 +30,102 @@ const StockHeader = () => {
     { label: 'Forecast', path: `/forecast/${tickerName}` },
   ];
 
-  const currentTab = location.pathname;
-
   const fetchStockData = async (ticker) => {
     try {
-      const response = await axios.get('http://localhost:5000/get_stock_data', { params: { ticker } });
+      const response = await axios.get('http://localhost:5000/get_stock_data', {
+        params: { ticker },
+      });
       setStockData(response.data);
-      setCurrentPrice(response.data.price);
-      setIsIndex(response.data.is_index || false);
     } catch (error) {
-      console.error('Failed to fetch stock data:', error);
+      console.error('Erreur lors de la récupération des données du stock :', error);
+    }
+  };
+
+  const startSimulation = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/start_simulation?ticker=${tickerName.toUpperCase()}`
+      );
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error('Erreur lors du démarrage de la simulation :', error);
+    }
+  };
+
+  const stopSimulation = async () => {
+    try {
+      await fetch('http://localhost:5000/stop_simulation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker: tickerName.toUpperCase() }),
+      });
+    } catch (error) {
+      console.error('Erreur lors de l’arrêt de la simulation :', error);
     }
   };
 
   useEffect(() => {
     fetchStockData(tickerName);
 
-    const socket = io('http://localhost:5000');
-    socket.on('price_update', data => {
-      if (data.price !== currentPrice) {
-        setCurrentPrice(data.price);
-      }
-    });
+    if (tickerName) {
+      startSimulation();
 
-    return () => {
-      socket.off('price_update');
-      socket.disconnect();
-    };
-  }, [tickerName, currentPrice]);
+      socket.on('real_time_price', (data) => {
+        if (data.ticker === tickerName.toUpperCase()) {
+          const newPrice = data.price;
+          if (simulatedPrice !== null) {
+            setFlashColor(newPrice > simulatedPrice ? 'green' : 'red');
+            setTimeout(() => setFlashColor(null), 1000); // Réinitialiser après l'animation
+          }
+          setSimulatedPrice(newPrice);
+        }
+      });
+
+      return () => {
+        socket.off('real_time_price');
+        stopSimulation();
+      };
+    }
+  }, [tickerName, simulatedPrice]);
+
+  const safeToFixed = (num, decimals = 2) =>
+    num !== undefined && num !== null ? num.toFixed(decimals) : 'N/A';
 
   if (!stockData) {
-    return <Typography>Error fetching stock data</Typography>;
+    return <Typography>Erreur lors du chargement des données du stock</Typography>;
   }
 
-  const safeToFixed = (num, decimals = 2) => (num !== undefined && num !== null ? num.toFixed(decimals) : 'N/A');
-
   const previousClose = stockData.previous_close;
-  const priceChange = currentPrice - previousClose;
-  const percentageChange = (priceChange / previousClose) * 100;
+  const priceChange =
+    simulatedPrice !== null ? simulatedPrice - previousClose : 0;
+  const percentageChange =
+    simulatedPrice !== null ? (priceChange / previousClose) * 100 : 0;
   const changeColor = priceChange >= 0 ? 'green' : 'red';
 
   return (
-    <Box sx={{ width: '90%', margin: 'auto'}}>
+    <Box sx={{ width: '90%', margin: 'auto' }}>
       <Grid container alignItems="center" justifyContent="space-between">
         <Grid item>
           <Typography variant="h4" sx={{ color: '#333' }}>
             {stockData.company_name || tickerName}
           </Typography>
         </Grid>
-
-        <Grid item>
-          <FollowButton />
-        </Grid>
       </Grid>
 
       <Divider sx={{ my: 1 }} />
-      <Box sx={{ width: '100%', maxWidth: '400px', marginLeft: -5 }}>
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '400px',
+          marginLeft: -5,
+          animation: flashColor
+            ? `${flashColor === 'green' ? 'flashGreen' : 'flashRed'} 1s ease-in-out`
+            : 'none',
+        }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -119,8 +137,11 @@ const StockHeader = () => {
             width: '100%',
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333', marginRight: 6 }}>
-            {safeToFixed(currentPrice)} $
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 'bold', color: '#333', marginRight: 6 }}
+          >
+            {simulatedPrice ? `${simulatedPrice}$` : 'Loading...'}
           </Typography>
 
           <Typography
@@ -131,7 +152,8 @@ const StockHeader = () => {
               mr: 1,
             }}
           >
-            {priceChange >= 0 ? '+' : ''}{safeToFixed(priceChange)}
+            {priceChange >= 0 ? '+' : ''}
+            {safeToFixed(priceChange)}
           </Typography>
 
           <Typography
@@ -141,19 +163,8 @@ const StockHeader = () => {
               fontWeight: 'bold',
             }}
           >
-            ({priceChange >= 0 ? '+' : ''}{safeToFixed(percentageChange)}%)
-          </Typography>
-        </Box>
-
-        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', marginLeft: -5, mb: 2 }}>
-          <Typography variant="body2" sx={{ color: '#666', textAlign: 'center' }}>
-            After Hours: {stockData.after_hours_price ? (
-              <span style={{ color: stockData.after_hours_change >= 0 ? 'green' : 'red' }}>
-                ${safeToFixed(stockData.after_hours_price)} ({stockData.after_hours_change >= 0 ? '+' : ''}{safeToFixed(stockData.after_hours_change)}%)
-              </span>
-            ) : (
-              <span>No After Hours Data</span>
-            )}
+            ({priceChange >= 0 ? '+' : ''}
+            {safeToFixed(percentageChange)}%)
           </Typography>
         </Box>
       </Box>
@@ -161,7 +172,7 @@ const StockHeader = () => {
       <AppBar position="static" color="default" sx={{ marginBottom: '16px' }}>
         <Toolbar>
           <Tabs
-            value={currentTab.toLowerCase()}
+            value={location.pathname.toLowerCase()}
             onChange={(event, newValue) => navigate(newValue)}
             indicatorColor="primary"
             textColor="primary"
@@ -172,6 +183,21 @@ const StockHeader = () => {
           </Tabs>
         </Toolbar>
       </AppBar>
+
+      {/* Définition des animations dans le style JSX */}
+      <style>
+        {`
+          @keyframes flashGreen {
+            0% { background-color: rgba(0, 255, 0, 0.3); }
+            100% { background-color: transparent; }
+          }
+
+          @keyframes flashRed {
+            0% { background-color: rgba(255, 0, 0, 0.3); }
+            100% { background-color: transparent; }
+          }
+        `}
+      </style>
     </Box>
   );
 };

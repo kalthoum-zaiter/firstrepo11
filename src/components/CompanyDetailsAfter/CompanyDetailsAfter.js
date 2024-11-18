@@ -78,7 +78,7 @@ const News = () => {
         {newsData.map((newsItem, index) => (
           <Grid item xs={12} key={index}>
             <Typography variant="body2" sx={{ color: '#888', mb: 1 }}>
-              {newsItem.source || 'Unknown Source'} • {timeSincePublication(newsItem.published)}
+               {timeSincePublication(newsItem.published)}
             </Typography>
             <Typography
               variant="body1"

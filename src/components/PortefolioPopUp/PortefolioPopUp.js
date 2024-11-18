@@ -64,6 +64,8 @@ const PortfolioPopup = ({ open, onClose, onSave }) => {
               value={portfolioName}
               onChange={(e) => setPortfolioName(e.target.value)}
               sx={{ mb: 2 }}
+              autoComplete="off"
+
             />
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
               <Button variant="outlined" onClick={onClose}>

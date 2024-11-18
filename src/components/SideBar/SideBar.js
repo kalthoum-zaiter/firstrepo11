@@ -9,31 +9,19 @@ import ListItemText from '@mui/material/ListItemText';
 import { Box, Divider } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
-import EmailIcon from '@mui/icons-material/Email';
 import SettingsIcon from '@mui/icons-material/Settings';
+import StockInSGHT from '../Layout/StockInSGHT.png'; // Your logo image
 
 const drawerWidth = 240;
-const collapsedWidth = 70;
 
 const Sidebar = ({ open, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const sections = [
-    {
-      title: 'Main',
-      items: [{ text: 'Accueil', icon: <HomeIcon /> }],
-    },
-    {
-      title: 'Portfolios & Lists',
-      items: [
-        { text: 'Portefeuilles', icon: <NewspaperIcon /> },
-      ],
-    },
-    {
-      title: 'Settings',
-      items: [{ text: 'Paramètres', icon: <SettingsIcon /> }],
-    },
+    { title: 'Main', items: [{ text: 'Accueil', icon: <HomeIcon /> }] },
+    { title: 'Portfolios & Lists', items: [{ text: 'Portefeuilles', icon: <NewspaperIcon /> }] },
+    { title: 'Settings', items: [{ text: 'Paramètres', icon: <SettingsIcon /> }] },
   ];
 
   const handleNavigate = (text) => {
@@ -43,23 +31,22 @@ const Sidebar = ({ open, onClose }) => {
 
   return (
     <Drawer
-      variant="persistent"
+      variant="temporary" // Change to temporary to overlay sidebar
       open={open}
       onClose={onClose}
       sx={{
-        width: open ? drawerWidth : collapsedWidth,
-        flexShrink: 0,
+        width: drawerWidth,
         '& .MuiDrawer-paper': {
-          width: open ? drawerWidth : collapsedWidth,
+          width: drawerWidth,
           boxSizing: 'border-box',
           color: 'white',
           overflowX: 'hidden',
-          backgroundColor: 'primary.main'
- 
+          backgroundColor: 'primary.main',
         },
       }}
     >
-      <Box sx={{ padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', p: 2 }}>
+        <img src={StockInSGHT} alt="Logo" style={{ width: '150px', height: 'auto' }} />
       </Box>
       <List>
         {sections.map((section, index) => (
@@ -70,19 +57,17 @@ const Sidebar = ({ open, onClose }) => {
                 <ListItemButton
                   onClick={() => handleNavigate(text)}
                   sx={{
-                    color: location.pathname.includes(text.replace(/[^A-Z0-9]+/gi, '').toLowerCase()) ? '#ddd' : '#aaa', // Light gray active color
-                    '&:hover': {
-                      backgroundColor: '#444', // Slightly lighter gray on hover
-                    },
+                    color: location.pathname.includes(text.replace(/[^A-Z0-9]+/gi, '').toLowerCase()) ? '#ddd' : '#aaa',
+                    '&:hover': { backgroundColor: '#444' },
                     '& .MuiListItemIcon-root': {
-                      color: location.pathname.includes(text.replace(/[^A-Z0-9]+/gi, '').toLowerCase()) ? '#ddd' : '#aaa', // Icons follow active color
+                      color: location.pathname.includes(text.replace(/[^A-Z0-9]+/gi, '').toLowerCase()) ? '#ddd' : '#aaa',
                     },
                   }}
                 >
                   <ListItemIcon sx={{ justifyContent: 'center', minWidth: 'auto' }}>
                     {icon}
                   </ListItemIcon>
-                  <ListItemText primary={text} sx={{ display: open ? 'block' : 'none' }} />
+                  <ListItemText primary={text} />
                 </ListItemButton>
               </ListItem>
             ))}

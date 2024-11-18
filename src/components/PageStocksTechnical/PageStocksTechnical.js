@@ -7,7 +7,6 @@ import {
 } from '@mui/material';
 import StockHeader from '../PageStockHeader/PageStockHeader';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 // Composant pour la jauge (Gauge chart) avec palette de couleurs adaptée
@@ -85,10 +84,7 @@ const PageStocksTechnical = () => {
 
   if (error) {
     return (
-
-      
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
-        
         <Typography color="error" variant="h5" display="flex" alignItems="center">
           {error}
         </Typography>
@@ -101,41 +97,57 @@ const PageStocksTechnical = () => {
   return (
     <Box p={3} sx={{ minHeight: '100vh' }}>
       <StockHeader></StockHeader>
-      <Grid container spacing={3}>
-        {/* Tableau des oscillateurs */}
-       
+      <Grid container spacing={3}> {/* Ajout de spacing ici pour espacement horizontal et vertical */}
+        
+        <Grid item xs={12} md={6}>
+          {/* Première Card: Jauge des Oscillateurs */}
+          {technicalData.oscillators && technicalData.oscillators !== 'No data available' && (
+            <Card sx={{ backgroundColor: '#e0f7fa', marginTop: '20px' }}>
+              <CardContent>
+                <GaugeChartComponent
+                  value={technicalData.oscillators[0]?.value || 50}
+                  title="Oscillators Indicator"
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tableau des pivots */}
+          {technicalData.pivots && technicalData.pivots !== 'No data available' ? (
+            <Card sx={{ backgroundColor: '#fff3e0', marginTop: '20px' }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <Typography variant="h6" fontWeight="medium">Pivots</Typography>
+                </Box>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Classic</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {technicalData.pivots.map((pivot) => (
+                        <TableRow key={pivot.name}>
+                          <TableCell>{pivot.name}</TableCell>
+                          <TableCell>{pivot.classic}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          ) : (
+            <Typography>No pivot data available.</Typography>
+          )}
+        </Grid>
 
         <Grid item xs={12} md={6}>
-  {/* Première Card: Jauge des Oscillateurs */}
-  {technicalData.oscillators && technicalData.oscillators !== 'No data available' && (
-    <Card sx={{ backgroundColor: '#e0f7fa', marginTop: '20px' }}>
-      <CardContent>
-        <GaugeChartComponent
-          value={technicalData.oscillators[0]?.value || 50} // Exemple de valeur
-          title="Oscillators Indicator"
-        />
-      </CardContent>
-    </Card>
-  )}
-
-  {/* Deuxième Card: Vide pour utilisation future */}
-  <Card sx={{ backgroundColor: '#f5f5f5', marginTop: '20px' }}>
-    <CardContent>
-      <Typography variant="h6" align="center">
-        Future Indicator
-      </Typography>
-      <Typography variant="body2" align="center" color="textSecondary">
-        Espace réservé pour des informations futures
-      </Typography>
-    </CardContent>
-  </Card>
-</Grid>
-
-
-        {/* Tableau des moyennes mobiles */}
-        <Grid item xs={12} md={6}>
+          {/* Tableau des moyennes mobiles */}
           {technicalData.moving_averages && technicalData.moving_averages !== 'No data available' ? (
-            <Card sx={{ backgroundColor: '#e8f5e9' , marginTop: '20px'}}>
+            <Card sx={{ backgroundColor: '#e8f5e9', marginTop: '20px' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={2}>
                   <Typography variant="h6" fontWeight="medium">Moving Averages</Typography>
@@ -165,44 +177,10 @@ const PageStocksTechnical = () => {
           ) : (
             <Typography>No moving averages data available.</Typography>
           )}
-        </Grid>
 
-        {/* Tableau des pivots */}
-        <Grid item xs={12} md={6} >
-          {technicalData.pivots && technicalData.pivots !== 'No data available' ? (
-            <Card sx={{ backgroundColor: '#fff3e0' }}>
-              <CardContent>
-                <Box display="flex" alignItems="center" mb={2}>
-                  <Typography variant="h6" fontWeight="medium">Pivots</Typography>
-                </Box>
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Classic</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {technicalData.pivots.map((pivot) => (
-                        <TableRow key={pivot.name}>
-                          <TableCell>{pivot.name}</TableCell>
-                          <TableCell>{pivot.classic}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </CardContent>
-            </Card>
-          ) : (
-            <Typography>No pivot data available.</Typography>
-          )}
-          
-        </Grid>
-        <Grid item xs={12} md={6}>
+          {/* Tableau des oscillateurs */}
           {technicalData.oscillators && technicalData.oscillators !== 'No data available' ? (
-            <Card sx={{ backgroundColor: '#e3f2fd' }}>
+            <Card sx={{ backgroundColor: '#e3f2fd', marginTop: '20px' }}>
               <CardContent>
                 <Box display="flex" alignItems="center" mb={5}>
                   <TrendingUpIcon color="primary" sx={{ mr: 1 }} />
@@ -233,19 +211,7 @@ const PageStocksTechnical = () => {
           ) : (
             <Typography>No oscillator data available.</Typography>
           )}
-          <Card sx={{ backgroundColor: '#f5f5f5', marginTop: '20px' }}>
-    <CardContent>
-      <Typography variant="h6" align="center">
-        Future Indicator
-      </Typography>
-      <Typography variant="body2" align="center" color="textSecondary">
-        Espace réservé pour des informations futures
-      </Typography>
-    </CardContent>
-  </Card>
         </Grid>
-        
-        
       </Grid>
     </Box>
   );

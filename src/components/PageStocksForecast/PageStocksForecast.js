@@ -1,184 +1,188 @@
-import React from 'react';
-import { Box, Card, CardContent, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableRow, Paper, Divider } from '@mui/material';
-import { Bar, Line } from 'react-chartjs-2';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ReactSpeedometer from 'react-d3-speedometer';
+import React, { useState, useEffect } from 'react';
+import { Typography, Grid, Divider, Box, CircularProgress, Paper } from '@mui/material';
+import { Bar, Line, Pie } from 'react-chartjs-2';
+import { Chart, ArcElement, BarElement, LineElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import StockHeader from '../PageStockHeader/PageStockHeader';
 
-// Sample data for the charts and tables
-const sampleEPSData = [
-    { label: 'H1 21', type: 'reported', values: [4.63, 4.48] },
-    { label: 'H2 21', type: 'reported', values: [4.19, 4.14] },
-    { label: 'H1 22', type: 'reported', values: [6.00, 5.37] },
-    { label: 'H2 22', type: 'reported', values: [5.26, 5.12] },
-];
+// Enregistrer les éléments nécessaires dans Chart.js
+Chart.register(ArcElement, BarElement, LineElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const sampleRevenueData = [
-    { label: 'H1 21', type: 'reported', values: [15.2, 15.21] },
-    { label: 'H2 21', type: 'reported', values: [17.09, 14.39] },
-    { label: 'H1 22', type: 'reported', values: [18.37, 17.73] },
-    { label: 'H2 22', type: 'reported', values: [19.89, 20.10] },
-];
-
-const sampleAnalystBreakdown = [
-    { label: 'Strong Buy', count: 11 },
-    { label: 'Buy', count: 2 },
-    { label: 'Hold', count: 9 },
-];
-
-const epsChartData = {
-    labels: sampleEPSData.map((item) => item.label),
-    datasets: [
-        {
-            label: 'Reported',
-            data: sampleEPSData.map((item) => item.values[0]),
-            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        },
-        {
-            label: 'Estimated',
-            data: sampleEPSData.map((item) => item.values[1]),
-            backgroundColor: 'rgba(201, 203, 207, 0.6)',
-        },
-    ],
-};
-
-const revenueChartData = {
-    labels: sampleRevenueData.map((item) => item.label),
-    datasets: [
-        {
-            label: 'Reported',
-            data: sampleRevenueData.map((item) => item.values[0]),
-            backgroundColor: 'rgba(255, 159, 64, 0.6)',
-        },
-        {
-            label: 'Estimated',
-            data: sampleRevenueData.map((item) => item.values[1]),
-            backgroundColor: 'rgba(201, 203, 207, 0.6)',
-        },
-    ],
-};
-
-const priceTargetData = {
-    labels: ['Current', 'Average', 'High', 'Low'],
-    datasets: [
-        {
-            label: 'Price Target',
-            data: [358.45, 411.3, 502.0, 325.0],
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.3)',
-            fill: true,
-        },
-    ],
-};
-
+// Composant principal de la page de prévisions
 const ForecastPage = () => {
+    const [forecastData, setForecastData] = useState(null);
+    const [predictionResult, setPredictionResult] = useState(null);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [loadingPrediction, setLoadingPrediction] = useState(false);
+    const { tickerName } = useParams();
+
+    // Fonction pour récupérer les données de prévision
+    const fetchForecastData = async (ticker) => {
+        try {
+            const response = await axios.get('http://127.0.0.1:5000/api/forecast', { params: { ticker } });
+            setForecastData(response.data);
+            setLoading(false);
+        } catch (error) {
+            console.error("Failed to fetch forecast data:", error);
+            setError("Failed to fetch forecast data.");
+            setLoading(false);
+        }
+    };
+
+    // Fonction pour récupérer les prédictions de sentiment
+    const fetchPrediction = async (symbol) => {
+        setLoadingPrediction(true);
+        try {
+            const response = await fetch('http://localhost:5000/predictSentiment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ symbol }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                setPredictionResult(result);
+                setError(null);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.error || 'An error occurred');
+                setPredictionResult(null);
+            }
+        } catch (err) {
+            setError('Failed to fetch data. Please try again.');
+            setPredictionResult(null);
+        } finally {
+            setLoadingPrediction(false);
+        }
+    };
+
+    // Charger les données lors du montage du composant
+    useEffect(() => {
+        if (tickerName) {
+            fetchForecastData(tickerName);
+            fetchPrediction(tickerName);
+        }
+    }, [tickerName]);
+
+    if (loading) return <CircularProgress size={40} />;
+    if (error) return <Typography color="error">{error}</Typography>;
+
+    const { eps = [], revenue = [], price_target = {}, analyst_breakdown = [] } = forecastData || {};
+
+    // Configurer les données pour les graphiques
+    const epsChartData = {
+        labels: eps.map((item) => item.label),
+        datasets: [
+            {
+                label: 'Prévision EPS',
+                data: eps.map((item) => item.values[0]),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            },
+        ],
+    };
+
+    const revenueChartData = {
+        labels: revenue.map((item) => item.label),
+        datasets: [
+            {
+                label: 'Prévision de Revenu',
+                data: revenue.map((item) => item.values[0]),
+                backgroundColor: 'rgba(100, 149, 237, 0.6)',
+            },
+        ],
+    };
+
+    const priceTargetData = {
+        labels: ['Actuel', 'Moyen', 'Haut', 'Bas'],
+        datasets: [
+            {
+                label: 'Objectif de Prix',
+                data: [price_target.current, price_target.average, price_target.high, price_target.low],
+                borderColor: 'rgba(70, 130, 180, 1)',
+                backgroundColor: 'rgba(70, 130, 180, 0.3)',
+                fill: true,
+            },
+        ],
+    };
+
+    const analystChartData = {
+        labels: analyst_breakdown.map((item) => item.label),
+        datasets: [
+            {
+                data: analyst_breakdown.map((item) => item.count),
+                backgroundColor: ['#89CFF0', '#4682B4', '#B0E0E6', '#6495ED'],
+                hoverBackgroundColor: ['#A9CCE3', '#5DADE2', '#AED6F1', '#3498DB'],
+            },
+        ],
+    };
+
     return (
-        <Box sx={{ padding: 4, maxWidth: 1200, margin: 'auto' }}>
-            {/* Stock Overview Section */}
-            <Box sx={{ mb: 4 }}>
-                <Typography variant="h4">OR 358,45 EUR <TrendingUpIcon color="success" /></Typography>
-                <Typography variant="subtitle2" color="textSecondary">+2,80 (+0,79%)</Typography>
-            </Box>
+        <div style={{ width: '90%', margin: 'auto', paddingTop: '2rem' }}>
+            {/* Section Header pour les informations de l'action */}
+            <StockHeader />
 
-            {/* Forecast Charts */}
-            <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6">Bénéfice par action</Typography>
-                            <Bar data={epsChartData} options={{ responsive: true }} />
-                            <Divider sx={{ my: 2 }} />
-                            <ForecastTable data={sampleEPSData} />
-                        </CardContent>
-                    </Card>
+            <Grid container spacing={4}>
+                {/* Section pour l'affichage du prix cible prédictif */}
+                <Grid item xs={12} md={6} style={{ height: 300 }}>
+                    <Typography variant="h5" style={{ marginTop: '2rem', marginBottom: '1rem', color: '#1976d2' }}>
+                        Prévisions Financières pour {tickerName}
+                    </Typography>
+
+                    <Paper elevation={3} sx={{ padding: 2, marginBottom: 2, textAlign: 'center' }}>
+                        {loadingPrediction ? (
+                            <CircularProgress />
+                        ) : predictionResult ? (
+                            <>
+                                <Typography variant="h6">Prix Cible Prédictif</Typography>
+                                <Typography variant="h5" color="primary" sx={{ mt: 1 }}>
+                                    {predictionResult.prediction} €
+                                </Typography>
+                            </>
+                        ) : (
+                            error && <Typography color="error">{error}</Typography>
+                        )}
+                    </Paper>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6">Revenu</Typography>
-                            <Bar data={revenueChartData} options={{ responsive: true }} />
-                            <Divider sx={{ my: 2 }} />
-                            <ForecastTable data={sampleRevenueData} />
-                        </CardContent>
-                    </Card>
+                {/* Section pour le graphique de la recommandation des analystes */}
+                <Grid item xs={12} md={6} style={{ textAlign: 'center', height: 300 }}>
+                    <Typography variant="h6" style={{ marginBottom: '1rem' }}>
+                        Recommandation des Analystes
+                    </Typography>
+                    <Pie data={analystChartData} options={{ responsive: true, maintainAspectRatio: false }} height={300} />
                 </Grid>
+
+                {/* Section pour le graphique de la prévision EPS */}
+                <Grid item xs={12} md={6} style={{ height: 300 }} sx={{ marginBottom: '20px' }}>
+                    <Typography variant="h6" style={{ marginBottom: '1rem' }}>
+                        Prévision EPS
+                    </Typography>
+                    <Bar data={epsChartData} options={{ responsive: true, maintainAspectRatio: false }} height={300} />
+                </Grid>
+
+                {/* Section pour le graphique de la prévision de revenu */}
+                <Grid item xs={12} md={6} style={{ height: 300 }}  sx={{ marginBottom: '20px' }}>
+                    <Typography variant="h6" style={{ marginBottom: '1rem' }}>
+                        Prévision de Revenu
+                    </Typography>
+                    <Bar data={revenueChartData} options={{ responsive: true, maintainAspectRatio: false }} height={300} />
+                </Grid>
+
+                {/* Section pour le graphique de l'objectif de prix */}
+         <Grid item xs={12} sx={{ marginTop: '20px' }} style={{ height: 300 }}>
+             <Typography variant="h6" style={{ marginBottom: '1rem' }}>
+             Objectif de Prix
+            </Typography>
+             <Line data={priceTargetData} options={{ responsive: true, maintainAspectRatio: false }} height={300} />
+        </Grid>
+
             </Grid>
-
-            {/* Price Target Section */}
-            <Box sx={{ mt: 4 }}>
-                <Card>
-                    <CardContent>
-                        <Typography variant="h6">Prix cible</Typography>
-                        <Line data={priceTargetData} options={{ responsive: true }} />
-                        <Typography variant="subtitle2" color="textSecondary">
-                            Les analystes estiment un maximum de 502,0 EUR et un minimum de 325,0 EUR.
-                        </Typography>
-                    </CardContent>
-                </Card>
-            </Box>
-
-            {/* Analyst Recommendations */}
-            <Box sx={{ mt: 4 }}>
-                <Card>
-                    <CardContent>
-                        <Typography variant="h6">Note des analystes</Typography>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
-                                <ReactSpeedometer
-                                    maxValue={100}
-                                    value={75} // Example value
-                                    needleColor="steelblue"
-                                    startColor="green"
-                                    endColor="red"
-                                    segments={5}
-                                    width={200}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <AnalystBreakdown data={sampleAnalystBreakdown} />
-                            </Grid>
-                        </Grid>
-                    </CardContent>
-                </Card>
-            </Box>
-        </Box>
+        </div>
     );
 };
-
-// ForecastTable Component for displaying forecast data tables
-const ForecastTable = ({ data = [] }) => {
-    return (
-        <TableContainer component={Paper} sx={{ mt: 2 }}>
-            <Table size="small">
-                <TableBody>
-                    {data.map((row, index) => (
-                        <TableRow key={index} hover sx={{ backgroundColor: row.type === 'reported' ? '#e3f2fd' : '#f0f0f0' }}>
-                            <TableCell>{row.label}</TableCell>
-                            {row.values.map((value, i) => (
-                                <TableCell key={i} align="right" sx={{ color: value < 0 ? 'red' : 'green' }}>
-                                    {value}
-                                </TableCell>
-                            ))}
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </TableContainer>
-    );
-};
-
-// AnalystBreakdown Component for showing analyst recommendations
-const AnalystBreakdown = ({ data }) => (
-    <Box>
-        {data.map((item, index) => (
-            <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2">{item.label}</Typography>
-                <Typography variant="body2" color={item.label === 'Strong Buy' ? 'green' : 'inherit'}>
-                    {item.count}
-                </Typography>
-            </Box>
-        ))}
-    </Box>
-);
 
 export default ForecastPage;
